@@ -4,6 +4,7 @@
 
 extern "C" {
 #include <FreeRTOS.h>
+#include <queue.h>
 #include <task.h>
 
 #include <pico/stdlib.h>
@@ -112,6 +113,8 @@ private:
 	absolute_time_t ntp_timeout_time = 0;
 };
 
+static QueueHandle_t comms;
+
 void main_task(void*)
 {
 	printf("Connecting...\n");
@@ -134,16 +137,34 @@ void main_task(void*)
 		{
 			client->request();
 			printf("High water mark: %lu\n", uxTaskGetStackHighWaterMark(NULL));
+			static int count = 0;
+			count++;
+			count %= 2;
+			unsigned data = 500;
+			if (count)
+				data /= 2;
+			xQueueSendToBack(comms, &data, 0);
 		}
 		vTaskDelay(1000);
 	}
 	cyw43_arch_deinit();
 }
 
-__attribute__((constructor))
-void initialization()
+void blink_task(void*)
 {
-	stdio_init_all();
+	unsigned data = 0;
+	xQueueReceive(comms, &data, portMAX_DELAY);
+	for (;;)
+	{
+		cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+		vTaskDelay(data);
+		cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
+		vTaskDelay(data);
+		if (uxQueueMessagesWaiting(comms))
+		{
+			xQueueReceive(comms, &data, portMAX_DELAY);
+		}
+	}
 }
 
 void init_task(void*)
@@ -157,11 +178,21 @@ void init_task(void*)
 	}
 	cyw43_arch_enable_sta_mode();
 
+	comms = xQueueCreate(1, sizeof(unsigned));
+
 	TaskHandle_t handle;
 	xTaskCreate(main_task, "main", 1280/4, nullptr, tskIDLE_PRIORITY+1, &handle);
 	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
+	xTaskCreate(blink_task, "blink", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
+	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
 	vTaskDelete(nullptr);
 	for(;;);
+}
+
+__attribute__((constructor))
+void initialization()
+{
+	stdio_init_all();
 }
 
 int main()
