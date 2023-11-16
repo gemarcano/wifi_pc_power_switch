@@ -1,0 +1,42 @@
+Design Files
+
+All design files are made available openly, with no limitations. Files hosted
+on this site and under this licence include,
+
+    cm4/CM4-step.zip
+    cm4/CM4Lite-step.zip
+    cm4io/CM4IO-KiCAD.zip
+    cm4io/CM4IOUSB3-KiCAD.zip
+    cmcda/RPi-CMCDA-1P1.zip
+    cmio/RPi-CMIO-R1P2.zip
+    cmio/RPi-CMIO-R3P0.zip
+    pico/Pico-R3-Fritzing.fzpz
+    pico/Pico-R3-step.zip
+    pico/PicoH-Fritzing.fzpz
+    pico/RPi-Pico-R3-PUBLIC-20200119.zip
+    picow/PicoW-Fritzing.fzpz
+    picow/PicoW-step.zip
+    picow/RPi-PicoW-PUBLIC-20220607.zip
+    rp2040/Minimal-KiCAD.zip
+    rp2040/VGA-KiCAD.zip
+    rp2040/VGA-PicoW-KiCAD.zip
+    rpi5/RaspberryPi5-step.zip
+    usb/USB-tester-KiCAD.zip
+
+Permission to use, copy, modify, and/or distribute this design for any purpose
+with or without fee is hereby granted.
+
+THE DESIGN IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS DESIGN INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS DESIGN.
+
+The models provided in the 3dmodels directory as part of the CM4 design files
+are from various manufacturers including; Diodes, MTCONN, Toby, TRXCOM. Terms
+and conditions for the use of the models remain with the original manufacture.
+
+The Niche™ antenna used in some designs is an Abracon/Proant patented antenna
+technology. Please contact niche@abracon.com for information on licensing.
