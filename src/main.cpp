@@ -163,6 +163,7 @@ void blink_task(void*)
 		if (uxQueueMessagesWaiting(comms))
 		{
 			xQueueReceive(comms, &data, portMAX_DELAY);
+			gpio_put(22, data > 250);
 		}
 	}
 }
@@ -193,6 +194,9 @@ __attribute__((constructor))
 void initialization()
 {
 	stdio_init_all();
+	gpio_init(22);
+	gpio_put(22, 0);
+	gpio_set_dir(22, GPIO_OUT);
 }
 
 int main()

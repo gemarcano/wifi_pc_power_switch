@@ -8,7 +8,7 @@ project(pc_remote_button)
 pico_sdk_init()
 
 add_executable(pc_remote_button
-	main.cpp
+	src/main.cpp
 )
 
 target_link_libraries(pc_remote_button
@@ -22,7 +22,7 @@ target_compile_options(pc_remote_button PRIVATE
 )
 
 target_include_directories(pc_remote_button PRIVATE
-	${CMAKE_SOURCE_DIR}
+	${CMAKE_SOURCE_DIR}/include
 )
 
 target_compile_features(pc_remote_button PRIVATE
