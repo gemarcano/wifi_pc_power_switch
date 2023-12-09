@@ -11,6 +11,9 @@ extern "C" {
 #include <pico/cyw43_arch.h>
 }
 
+#include <switch.h>
+#include <server.h>
+
 #include <lwip/dns.h>
 #include <lwip/pbuf.h>
 #include <lwip/udp.h>
@@ -122,9 +125,10 @@ void main_task(void*)
 		printf("failed to connect\n");
 		return;
 	}
-	printf("Connected!\n");
+	printf("Connected! %s\n", ip4addr_ntoa(netif_ip4_addr(netif_list)));
 
 	auto client = std::make_unique<ntp_client>();
+
 	if (!client)
 	{
 		printf("Failed to init ntp_client\n");
@@ -137,34 +141,36 @@ void main_task(void*)
 		{
 			client->request();
 			printf("High water mark: %lu\n", uxTaskGetStackHighWaterMark(NULL));
-			static int count = 0;
-			count++;
-			count %= 2;
-			unsigned data = 500;
-			if (count)
-				data /= 2;
-			xQueueSendToBack(comms, &data, 0);
 		}
 		vTaskDelay(1000);
 	}
 	cyw43_arch_deinit();
 }
 
-void blink_task(void*)
+static pc_switch<22> switch_(false);
+static server server_;
+
+void switch_task(void*)
 {
 	unsigned data = 0;
-	xQueueReceive(comms, &data, portMAX_DELAY);
 	for (;;)
 	{
+		xQueueReceive(comms, &data, portMAX_DELAY);
 		cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+		switch_.set(true);
 		vTaskDelay(data);
 		cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
-		vTaskDelay(data);
-		if (uxQueueMessagesWaiting(comms))
-		{
-			xQueueReceive(comms, &data, portMAX_DELAY);
-			gpio_put(22, data > 250);
-		}
+		switch_.set(false);
+	}
+}
+
+void network_task(void*)
+{
+	server_.listen(48686);
+	for(;;)
+	{
+		int32_t data = server_.handle_request();
+		xQueueSendToBack(comms, &data, 0);
 	}
 }
 
@@ -175,7 +181,7 @@ void init_task(void*)
 	if (cyw43_arch_init_with_country(CYW43_COUNTRY_USA))
 	{
 		printf("failed to initialise cyw43\n");
-		return;
+		goto terminate;
 	}
 	cyw43_arch_enable_sta_mode();
 
@@ -184,8 +190,12 @@ void init_task(void*)
 	TaskHandle_t handle;
 	xTaskCreate(main_task, "main", 1280/4, nullptr, tskIDLE_PRIORITY+1, &handle);
 	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
-	xTaskCreate(blink_task, "blink", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
+	xTaskCreate(switch_task, "blink", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
 	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
+	xTaskCreate(network_task, "network", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
+	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
+
+terminate:
 	vTaskDelete(nullptr);
 	for(;;);
 }
@@ -194,9 +204,6 @@ __attribute__((constructor))
 void initialization()
 {
 	stdio_init_all();
-	gpio_init(22);
-	gpio_put(22, 0);
-	gpio_set_dir(22, GPIO_OUT);
 }
 
 int main()
