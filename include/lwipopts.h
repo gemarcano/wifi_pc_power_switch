@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later OR LGPL-2.1-or-later
-// Copyright: Gabriel Marcano, 2023
+// SPDX-FileCopyrightText: Gabriel Marcano, 2023
 /// @file
 
 #ifndef LWIPOPTS_H_
