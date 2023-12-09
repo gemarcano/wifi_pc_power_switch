@@ -9,6 +9,7 @@ pico_sdk_init()
 
 add_executable(pc_remote_button
 	src/main.cpp
+	src/ntp.cpp
 )
 
 target_link_libraries(pc_remote_button

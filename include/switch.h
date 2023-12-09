@@ -3,6 +3,7 @@
 /// @file
 
 #ifndef SWITCH_H_
+#define SWITCH_H_
 
 #include <pico/stdlib.h>
 
@@ -10,28 +11,12 @@ template<int GPIOn>
 class pc_switch
 {
 public:
-	pc_switch(bool init_state)
-	{
-		gpio_init(GPIOn);
-		gpio_put(GPIOn, init_state);
-		gpio_disable_pulls(GPIOn);
-		gpio_set_dir(GPIOn, GPIO_OUT);
-	}
-
-	void set(bool state)
-	{
-		gpio_put(GPIOn, state);
-	}
-
-	bool get() const
-	{
-		return gpio_get(GPIOn);
-	}
-
-	void toggle()
-	{
-		set(!get());
-	}
+	pc_switch(bool init_state);
+	void set(bool state);
+	bool get() const;
+	void toggle();
 };
+
+#include "switch.ipp"
 
 #endif//SWITCH_H_

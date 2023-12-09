@@ -2,7 +2,8 @@
 // Copyright: Gabriel Marcano, 2023
 /// @file
 
-#ifndef SWITCH_H_
+#ifndef SERVER_H_
+#define SERVER_H_
 
 #include <pico/stdlib.h>
 
@@ -64,4 +65,4 @@ private:
 	int socket_ipv4 = -1;
 };
 
-#endif//SWITCH_H_
+#endif//SERVER_H_
