@@ -6,20 +6,20 @@
 #include <switch.h>
 #include <server.h>
 
-extern "C" {
-#include <FreeRTOS.h>
-#include <queue.h>
-#include <task.h>
-
 #include <pico/stdlib.h>
 #include <pico/cyw43_arch.h>
-}
 
 #include <lwip/dns.h>
 #include <lwip/pbuf.h>
 #include <lwip/udp.h>
 #include <lwip/sockets.h>
 #include <lwip/netdb.h>
+
+extern "C" {
+#include <FreeRTOS.h>
+#include <queue.h>
+#include <task.h>
+}
 
 #include <cstring>
 #include <ctime>
@@ -31,36 +31,6 @@ extern "C" {
 #include "secrets.h"
 
 static QueueHandle_t comms;
-
-void main_task(void*)
-{
-	printf("Connecting...\n");
-	if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
-		printf("failed to connect\n");
-		return;
-	}
-	printf("Connected! %s\n", ip4addr_ntoa(netif_ip4_addr(netif_list)));
-
-	auto client = std::make_unique<ntp_client>();
-
-	if (!client)
-	{
-		printf("Failed to init ntp_client\n");
-		return;
-	}
-
-	while(true)
-	{
-		if (client->time_elapsed())
-		{
-			client->request();
-			printf("High water mark: %lu\n", uxTaskGetStackHighWaterMark(NULL));
-		}
-		vTaskDelay(1000);
-	}
-	cyw43_arch_deinit();
-}
-
 static pc_switch<22> switch_(false);
 static server server_;
 
@@ -98,12 +68,19 @@ void init_task(void*)
 		goto terminate;
 	}
 	cyw43_arch_enable_sta_mode();
+	printf("Connecting...\n");
+	if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
+		printf("failed to connect\n");
+		return;
+	}
+	printf("Connected! %s\n", ip4addr_ntoa(netif_ip4_addr(netif_list)));
+
+	// FIXME should we call this somewhere?
+	//cyw43_arch_deinit();1
 
 	comms = xQueueCreate(1, sizeof(unsigned));
 
 	TaskHandle_t handle;
-	xTaskCreate(main_task, "main", 1280/4, nullptr, tskIDLE_PRIORITY+1, &handle);
-	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
 	xTaskCreate(switch_task, "blink", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
 	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
 	xTaskCreate(network_task, "network", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
