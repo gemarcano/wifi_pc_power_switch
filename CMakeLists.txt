@@ -30,6 +30,10 @@ target_compile_features(pc_remote_button PRIVATE
 	cxx_std_23
 )
 
+if (DEFINED HOSTNAME)
+	add_compile_definitions(CYW43_HOST_NAME=\"${HOSTNAME}\")
+endif()
+
 pico_add_extra_outputs(pc_remote_button)
 
 pico_enable_stdio_usb(pc_remote_button 1)
