@@ -7,6 +7,7 @@
 #include <server.h>
 #include <syslog.h>
 
+#include <pico/unique_id.h>
 #include <pico/stdlib.h>
 #include <pico/cyw43_arch.h>
 
@@ -82,6 +83,10 @@ void run(const char* line)
 		printf("NETIF is up? %s\r\n", netif_is_up(netif_default) ? "yes" : "no");
 		printf("NETIF flags: 0x%02X\r\n", netif_default->flags);
 		printf("ticks: %lu\r\n", xTaskGetTickCount());
+
+		char foo[2 * PICO_UNIQUE_BOARD_ID_SIZE_BYTES + 1];
+		pico_get_unique_board_id_string(foo, sizeof(foo));
+		printf("unique id: %s\r\n", foo);
 	}
 }
 
@@ -146,30 +151,44 @@ static safe_syslog<syslog<1024*128>> log;
 
 void init_task(void*)
 {
-	printf("In Init\r\n");
+	stdio_init_all();
+	// FIXME Wait a second to give minicom some time to reconnect
+	// Might be the Linux USB stack getting setup that's causing the delay
+	vTaskDelay(1000);
+	
+	printf("Started, in init\r\n");
 	log.register_push_callback(print_callback);
 	printf("Post log\r\n");
-	// cyw43_arch_init _must_ be called within a FreeRTOS task, see
-	// https://github.com/raspberrypi/pico-sdk/issues/1540
-	if (cyw43_arch_init_with_country(CYW43_COUNTRY_USA))
+
+	// Loop indefinitely until we connect to WiFi
+	for (;;)
 	{
-		printf("failed to initialise cyw43\n");
-		goto terminate;
-	}
-	cyw43_arch_enable_sta_mode();
+		printf("Initializing cyw43 with USA region...: ");
+		// cyw43_arch_init _must_ be called within a FreeRTOS task, see
+		// https://github.com/raspberrypi/pico-sdk/issues/1540
+		if (cyw43_arch_init_with_country(CYW43_COUNTRY_USA))
+		{
+			printf("FAILED\r\n");
+			continue;
+		}
+		printf("DONE\r\n");
+		cyw43_arch_enable_sta_mode();
 
-	cyw43_arch_lwip_begin();
-	netif_set_status_callback(netif_default, status_callback);
-	netif_set_link_callback(netif_default, link_callback);
-	cyw43_arch_lwip_end();
+		printf("Connecting to SSID %s...: ", WIFI_SSID);
+		if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
+			printf("FAILED\r\n");
+			continue;
+		}
+		printf("DONE\r\n");
 
-	printf("Connecting...\n");
-	if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
-		printf("failed to connect\n");
-		return;
+		cyw43_arch_lwip_begin();
+		netif_set_status_callback(netif_default, status_callback);
+		netif_set_link_callback(netif_default, link_callback);
+		cyw43_arch_lwip_end();
+
+		break;
 	}
-	printf("Connected! %s\n", ip4addr_ntoa(netif_ip4_addr(netif_list)));
-	printf("default: %p\r\n", netif_default);
+	printf("Connected with IP address %s\r\n", ip4addr_ntoa(netif_ip4_addr(netif_list)));
 
 	// FIXME should we call this somewhere?
 	//cyw43_arch_deinit();1
@@ -184,22 +203,15 @@ void init_task(void*)
 	xTaskCreate(cli_task, "cli", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
 	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
 
-terminate:
 	vTaskDelete(nullptr);
 	for(;;);
 }
 
-__attribute__((constructor))
-void initialization()
-{
-	stdio_init_all();
-	sleep_ms(1000);
-	printf("Started\r\n");
-}
-
 int main()
 {
-	printf("In main\r\n");
+	// Alright, based on reading the pico-sdk, it's pretty much just a bad idea
+	// to do ANYTHING outside of a FreeRTOS task when using FreeRTOS with the
+	// pico-sdk... just do all required initialization in the init task
 	TaskHandle_t init_handle;
 	xTaskCreate(init_task, "init", 256, nullptr, tskIDLE_PRIORITY+1, &init_handle);
 	vTaskCoreAffinitySet(init_handle, (1 << 1) | (1 << 0));
