@@ -34,7 +34,7 @@ extern "C" {
 
 static QueueHandle_t comms;
 static pc_switch<22> switch_(false);
-static server server_;
+static pc_remote_button::server server_;
 
 void switch_task(void*)
 {
@@ -55,7 +55,8 @@ void network_task(void*)
 	server_.listen(48686);
 	for(;;)
 	{
-		int32_t data = server_.handle_request();
+		pc_remote_button::socket sock = server_.accept();
+		int32_t data = server_.handle_request(std::move(sock));
 		xQueueSendToBack(comms, &data, 0);
 	}
 }

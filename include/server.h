@@ -16,53 +16,101 @@
 #include <string>
 #include <cstdint>
 
-class server
+namespace pc_remote_button
 {
-public:
-	bool listen(uint16_t port)
+	class socket
 	{
-		// Look up IP address of NTP server first, in case we're looking at an
-		// NTP pool
-		const addrinfo hints = {
-			.ai_flags = 0,
-			.ai_family = AF_UNSPEC,
-			.ai_socktype = SOCK_STREAM,
-			.ai_protocol = 0,
-		};
-		addrinfo *result = NULL;
-		int err = getaddrinfo("0.0.0.0", std::to_string(port).c_str(), &hints, &result);
-		int s = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-		bind(s, result->ai_addr, result->ai_addrlen);
-		freeaddrinfo(result);
-		::listen(s, 1);
+	public:
+		socket()
+		:socket_(-1)
+		{}
 
-		socket_ipv4 = s;
-		return true;
-	}
+		socket(int sock)
+		:socket_(sock)
+		{}
 
-	int32_t handle_request()
-	{
-		int32_t result = -1;
-		struct sockaddr_storage remote_addr;
-		socklen_t addr_size = sizeof(remote_addr);
-		int req_socket = accept(socket_ipv4, reinterpret_cast<sockaddr*>(&remote_addr), &addr_size);
-
-		char buffer[16] = {};
-		ssize_t amount = recv(req_socket, buffer, 4, 0);
-		if (amount != 4)
+		~socket()
 		{
-			goto terminate;
+			if (socket_ != -1)
+			{
+				close(socket_);
+			}
 		}
-		memcpy(&result, buffer, sizeof(result));
-		result = ntohl(result);
 
-	terminate:
-		close(req_socket);
-		return result;
-	}
+		socket(socket&& sock)
+		{
+			std::swap(socket_, sock.socket_);
+		}
 
-private:
-	int socket_ipv4 = -1;
-};
+		socket& operator=(socket&& sock)
+		{
+			std::swap(socket_, sock.socket_);
+			return *this;
+		}
+
+		socket(const socket&) = delete;
+		socket& operator=(const socket&) = delete;
+
+		int get()
+		{
+			return socket_;
+		}
+	private:
+		int socket_;
+	};
+
+	class server
+	{
+	public:
+		bool listen(uint16_t port)
+		{
+			// Look up IP address of NTP server first, in case we're looking at an
+			// NTP pool
+			const addrinfo hints = {
+				.ai_flags = 0,
+				.ai_family = AF_UNSPEC,
+				.ai_socktype = SOCK_STREAM,
+				.ai_protocol = 0,
+			};
+			addrinfo *result = NULL;
+			int err = getaddrinfo("0.0.0.0", std::to_string(port).c_str(), &hints, &result);
+			int s = ::socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+			socket_ipv4 = socket(s);
+			bind(socket_ipv4.get(), result->ai_addr, result->ai_addrlen);
+			freeaddrinfo(result);
+			::listen(s, 1);
+
+			return true;
+		}
+
+		socket accept()
+		{
+			struct sockaddr_storage remote_addr;
+			socklen_t addr_size = sizeof(remote_addr);
+			socket req_socket(::accept(socket_ipv4.get(), reinterpret_cast<sockaddr*>(&remote_addr), &addr_size));
+
+			return req_socket;
+		}
+
+		static int32_t handle_request(socket&& sock)
+		{
+			int32_t result = -1;
+			char buffer[16] = {};
+			ssize_t amount = recv(sock.get(), buffer, 4, 0);
+			if (amount != 4)
+			{
+				return result;
+			}
+			memcpy(&result, buffer, sizeof(result));
+			result = ntohl(result);
+
+			return result;
+		}
+
+	private:
+		socket socket_ipv4{-1};
+	};
+
+}
 
 #endif//SERVER_H_
