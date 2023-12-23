@@ -33,7 +33,7 @@ extern "C" {
 #include "secrets.h"
 
 static QueueHandle_t comms;
-static pc_switch<22> switch_(false);
+static pc_remote_button::pc_switch<22> switch_(false);
 static pc_remote_button::server server_;
 
 void switch_task(void*)

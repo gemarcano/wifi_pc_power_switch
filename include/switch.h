@@ -7,15 +7,18 @@
 
 #include <pico/stdlib.h>
 
-template<int GPIOn>
-class pc_switch
+namespace pc_remote_button
 {
-public:
-	pc_switch(bool init_state);
-	void set(bool state);
-	bool get() const;
-	void toggle();
-};
+	template<int GPIOn>
+	class pc_switch
+	{
+	public:
+		pc_switch(bool init_state);
+		void set(bool state);
+		bool get() const;
+		void toggle();
+	};
+}
 
 #include "switch.ipp"
 
