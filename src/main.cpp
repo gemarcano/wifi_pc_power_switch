@@ -10,6 +10,8 @@
 #include <pico/unique_id.h>
 #include <pico/stdlib.h>
 #include <pico/cyw43_arch.h>
+#include <pico/bootrom.h>
+#include <hardware/watchdog.h>
 
 #include <lwip/dns.h>
 #include <lwip/pbuf.h>
@@ -89,6 +91,22 @@ void run(const char* line)
 		pico_get_unique_board_id_string(foo, sizeof(foo));
 		printf("unique id: %s\r\n", foo);
 	}
+
+	if (line[0] == 'r')
+	{
+		printf("Rebooting...\r\n");
+		fflush(stdout);
+		reset_usb_boot(0,0);
+	}
+
+	if (line[0] == 'k')
+	{
+		printf("Killing (hanging)...\r\n");
+		fflush(stdout);
+		TaskHandle_t handle = xTaskGetHandle("watchdog");
+		vTaskDelete(handle);
+		for(;;);
+	}
 }
 
 void cli_task(void*)
@@ -150,12 +168,27 @@ void print_callback(std::string_view str)
 
 static safe_syslog<syslog<1024*128>> log;
 
+void watchdog_task(void*)
+{
+	for(;;)
+	{
+		watchdog_update();
+		vTaskDelay(80);
+	}
+}
+
 void init_task(void*)
 {
 	stdio_init_all();
 	// FIXME Wait a second to give minicom some time to reconnect
 	// Might be the Linux USB stack getting setup that's causing the delay
 	vTaskDelay(1000);
+
+	// Initialize watchdog hardware
+	TaskHandle_t handle;
+	watchdog_enable(100, true);
+	xTaskCreate(watchdog_task, "watchdog", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
+	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
 	
 	printf("Started, in init\r\n");
 	log.register_push_callback(print_callback);
@@ -196,8 +229,7 @@ void init_task(void*)
 
 	comms = xQueueCreate(1, sizeof(unsigned));
 
-	TaskHandle_t handle;
-	xTaskCreate(switch_task, "blink", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
+	xTaskCreate(switch_task, "switch", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
 	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
 	xTaskCreate(network_task, "network", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
 	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));

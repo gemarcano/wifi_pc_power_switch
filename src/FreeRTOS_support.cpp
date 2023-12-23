@@ -1,40 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR LGPL-2.1-or-later
+// SPDX-FileCopyrightText: Gabriel Marcano, 2023
+/// @file
+
 #include <FreeRTOS.h>
 #include <semphr.h>
-#include <malloc.h>
-
-class malloc_mutex
-{
-public:
-	SemaphoreHandle_t mutex;
-	static malloc_mutex& get()
-	{
-		static malloc_mutex singleton;
-		return singleton;
-	}
-
-private:
-	StaticSemaphore_t mutex_memory;
-
-	malloc_mutex()
-	{
-		mutex = xSemaphoreCreateRecursiveMutexStatic(&mutex_memory);
-	}
-};
 
 extern "C"
 {
-	void __malloc_lock(struct _reent *ptr)
-	{
-		static malloc_mutex& mutex = malloc_mutex::get();
-		xSemaphoreTakeRecursive(mutex.mutex, portMAX_DELAY);
-	}
-
-	void __malloc_unlock(struct _reent *ptr)
-	{
-		static malloc_mutex& mutex = malloc_mutex::get();
-		xSemaphoreGiveRecursive(mutex.mutex);
-	}
-
 	void vApplicationGetIdleTaskMemory(StaticTask_t **idle_task_tcb, StackType_t **idle_task_stack, uint32_t *idle_stack_size)
 	{
 		static StaticTask_t task_tcb;
