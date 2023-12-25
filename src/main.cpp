@@ -54,12 +54,34 @@ void switch_task(void*)
 
 void network_task(void*)
 {
-	server_.listen(48686);
+	// Loop endlessly, restarting the server if there are errors
 	for(;;)
 	{
-		pc_remote_button::socket sock = server_.accept();
-		int32_t data = server_.handle_request(std::move(sock));
-		xQueueSendToBack(comms, &data, 0);
+		// FIXME maybe move wifi initialization here?
+		int err;
+		do
+		{
+			err = server_.listen(48686);
+			if (err != 0)
+			{
+				fprintf(stderr, "unable to listen on server, error %i\r\n", err);
+			}
+		} while (err != 0);
+
+		for(;;)
+		{
+			auto result = server_.accept();
+			if (!result)
+			{
+				fprintf(stderr, "unable to accept socket, error %i\r\n", result.error());
+				// FIXME what if the error is terminal? Are there any terminal errors?
+				break;
+			}
+			int32_t data = server_.handle_request(std::move(*result));
+			xQueueSendToBack(comms, &data, 0);
+		}
+
+		server_.close();
 	}
 }
 
@@ -189,7 +211,7 @@ void init_task(void*)
 	watchdog_enable(100, true);
 	xTaskCreate(watchdog_task, "watchdog", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
 	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
-	
+
 	printf("Started, in init\r\n");
 	log.register_push_callback(print_callback);
 	printf("Post log\r\n");

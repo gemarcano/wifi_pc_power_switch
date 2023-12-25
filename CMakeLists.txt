@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.20)
 
 include(pico_sdk_import.cmake)
 include(FreeRTOS_Kernel_import.cmake)
@@ -30,6 +30,8 @@ target_include_directories(pc_remote_button PRIVATE
 target_compile_features(pc_remote_button PRIVATE
 	cxx_std_23
 )
+
+set_property(TARGET pc_remote_button PROPERTY CXX_STANDARD 23)
 
 if (DEFINED HOSTNAME)
 	add_compile_definitions(CYW43_HOST_NAME=\"${HOSTNAME}\")

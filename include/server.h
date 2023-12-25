@@ -15,6 +15,8 @@
 
 #include <string>
 #include <cstdint>
+#include <memory>
+#include <expected>
 
 namespace pc_remote_button
 {
@@ -33,8 +35,19 @@ namespace pc_remote_button
 		{
 			if (socket_ != -1)
 			{
-				close(socket_);
+				shutdown();
+				close();
 			}
+		}
+
+		void shutdown()
+		{
+			::shutdown(socket_, SHUT_RDWR);
+		}
+
+		void close()
+		{
+			::close(socket_);
 		}
 
 		socket(socket&& sock)
@@ -59,10 +72,31 @@ namespace pc_remote_button
 		int socket_;
 	};
 
+	class addrinfo_deleter
+	{
+	public:
+		void operator()(addrinfo *info)
+		{
+			if (info)
+				freeaddrinfo(info);
+		}
+	};
+
+	using addrinfo_ptr = std::unique_ptr<addrinfo, addrinfo_deleter>;
+
 	class server
 	{
 	public:
-		bool listen(uint16_t port)
+
+		~server()
+		{
+			if (socket_ipv4.get() != -1)
+			{
+				close();
+			}
+		}
+
+		int listen(uint16_t port)
 		{
 			// Look up IP address of NTP server first, in case we're looking at an
 			// NTP pool
@@ -72,24 +106,40 @@ namespace pc_remote_button
 				.ai_socktype = SOCK_STREAM,
 				.ai_protocol = 0,
 			};
-			addrinfo *result = NULL;
-			int err = getaddrinfo("0.0.0.0", std::to_string(port).c_str(), &hints, &result);
-			int s = ::socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-			socket_ipv4 = socket(s);
-			bind(socket_ipv4.get(), result->ai_addr, result->ai_addrlen);
-			freeaddrinfo(result);
-			::listen(s, 1);
+			addrinfo_ptr result = NULL;
+			addrinfo *result_ = NULL;
+			int err = getaddrinfo("0.0.0.0", std::to_string(port).c_str(), &hints, &result_);
+			if (err == -1)
+				return errno;
+			result.reset(result_);
+			result_ = NULL;
 
-			return true;
+			socket sock{::socket(result->ai_family, result->ai_socktype, result->ai_protocol)};
+			if (sock.get() == -1)
+				return errno;
+
+			err = bind(sock.get(), result->ai_addr, result->ai_addrlen);
+			if (err == -1)
+				return errno;
+
+			// FIXME Should we only have a queue depth of 1?
+			err = ::listen(sock.get(), 1);
+			if (err == -1)
+				return errno;
+
+			socket_ipv4 = std::move(sock);
+
+			return 0;
 		}
 
-		socket accept()
+		std::expected<socket, int> accept()
 		{
 			struct sockaddr_storage remote_addr;
 			socklen_t addr_size = sizeof(remote_addr);
-			socket req_socket(::accept(socket_ipv4.get(), reinterpret_cast<sockaddr*>(&remote_addr), &addr_size));
-
-			return req_socket;
+			int sock = ::accept(socket_ipv4.get(), reinterpret_cast<sockaddr*>(&remote_addr), &addr_size);
+			if (sock == -1)
+				return std::unexpected(errno);
+			return socket(sock);
 		}
 
 		static int32_t handle_request(socket&& sock)
@@ -105,6 +155,12 @@ namespace pc_remote_button
 			result = ntohl(result);
 
 			return result;
+		}
+
+		void close()
+		{
+			socket_ipv4.shutdown();
+			socket_ipv4.close();
 		}
 
 	private:
