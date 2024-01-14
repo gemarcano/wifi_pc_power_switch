@@ -37,6 +37,7 @@ extern "C" {
 static QueueHandle_t comms;
 static pc_remote_button::pc_switch<22> switch_(false);
 static pc_remote_button::server server_;
+static safe_syslog<syslog<1024*128>> log;
 
 void switch_task(void*)
 {
@@ -108,10 +109,24 @@ void run(const char* line)
 		printf("NETIF is up? %s\r\n", netif_is_up(netif_default) ? "yes" : "no");
 		printf("NETIF flags: 0x%02X\r\n", netif_default->flags);
 		printf("ticks: %lu\r\n", xTaskGetTickCount());
+		UBaseType_t number_of_tasks = uxTaskGetNumberOfTasks();
+		printf("Tasks active: %lu\r\n", number_of_tasks);
+		std::vector<TaskStatus_t> tasks(number_of_tasks);
+		uxTaskGetSystemState(tasks.data(), tasks.size(), nullptr);
+		for (auto& status: tasks)
+		{
+			printf("  task name: %s\r\n", status.pcTaskName);
+		}
 
 		char foo[2 * PICO_UNIQUE_BOARD_ID_SIZE_BYTES + 1];
 		pico_get_unique_board_id_string(foo, sizeof(foo));
 		printf("unique id: %s\r\n", foo);
+
+		printf("log size: %zu\r\n", log.size());
+		for (size_t i = 0; i < log.size(); ++i)
+		{
+			printf("log %zu: %s\r\n", i, log[i].c_str());
+		}
 	}
 
 	if (line[0] == 'r')
@@ -125,7 +140,7 @@ void run(const char* line)
 	{
 		printf("Killing (hanging)...\r\n");
 		fflush(stdout);
-		TaskHandle_t handle = xTaskGetHandle("watchdog");
+		TaskHandle_t handle = xTaskGetHandle("prb_watchdog");
 		vTaskDelete(handle);
 		for(;;);
 	}
@@ -175,20 +190,18 @@ void cli_task(void*)
 
 void status_callback(netif *netif_)
 {
-	printf("status changed\r\n");
+	log.push("status changed");
 }
 
 void link_callback(netif *netif_)
 {
-	printf("link changed\r\n");
+	log.push("link changed");
 }
 
 void print_callback(std::string_view str)
 {
 	printf("syslog: %.*s\r\n", str.size(), str.data());
 }
-
-static safe_syslog<syslog<1024*128>> log;
 
 void watchdog_task(void*)
 {
@@ -209,33 +222,34 @@ void init_task(void*)
 	// Initialize watchdog hardware
 	TaskHandle_t handle;
 	watchdog_enable(100, true);
-	xTaskCreate(watchdog_task, "watchdog", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
+	xTaskCreate(watchdog_task, "prb_watchdog", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
 	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
 
 	printf("Started, in init\r\n");
 	log.register_push_callback(print_callback);
-	printf("Post log\r\n");
 
 	// Loop indefinitely until we connect to WiFi
 	for (;;)
 	{
-		printf("Initializing cyw43 with USA region...: ");
+		log.push("Initializing cyw43 with USA region...: ");
 		// cyw43_arch_init _must_ be called within a FreeRTOS task, see
 		// https://github.com/raspberrypi/pico-sdk/issues/1540
 		if (cyw43_arch_init_with_country(CYW43_COUNTRY_USA))
 		{
-			printf("FAILED\r\n");
+			log.push("    FAILED");
 			continue;
 		}
-		printf("DONE\r\n");
+		log.push("    DONE");
 		cyw43_arch_enable_sta_mode();
 
-		printf("Connecting to SSID %s...: ", WIFI_SSID);
+		char buffer[64] = {};
+		snprintf(buffer, 64, "Connecting to SSID %s...: ", WIFI_SSID);
+		log.push(buffer);
 		if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
-			printf("FAILED\r\n");
+			log.push("    FAILED");
 			continue;
 		}
-		printf("DONE\r\n");
+		log.push("    DONE");
 
 		cyw43_arch_lwip_begin();
 		netif_set_status_callback(netif_default, status_callback);
@@ -244,18 +258,20 @@ void init_task(void*)
 
 		break;
 	}
-	printf("Connected with IP address %s\r\n", ip4addr_ntoa(netif_ip4_addr(netif_list)));
+	char buffer[64] = {};
+	snprintf(buffer, 64, "Connected with IP address %s", ip4addr_ntoa(netif_ip4_addr(netif_list)));
+	log.push(buffer);
 
 	// FIXME should we call this somewhere?
 	//cyw43_arch_deinit();1
 
 	comms = xQueueCreate(1, sizeof(unsigned));
 
-	xTaskCreate(switch_task, "switch", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
+	xTaskCreate(switch_task, "prb_switch", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
 	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
-	xTaskCreate(network_task, "network", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
+	xTaskCreate(network_task, "prb_network", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
 	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
-	xTaskCreate(cli_task, "cli", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
+	xTaskCreate(cli_task, "prb_cli", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
 	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
 
 	vTaskDelete(nullptr);
@@ -268,7 +284,7 @@ int main()
 	// to do ANYTHING outside of a FreeRTOS task when using FreeRTOS with the
 	// pico-sdk... just do all required initialization in the init task
 	TaskHandle_t init_handle;
-	xTaskCreate(init_task, "init", 256, nullptr, tskIDLE_PRIORITY+1, &init_handle);
+	xTaskCreate(init_task, "prb_init", 256, nullptr, tskIDLE_PRIORITY+1, &init_handle);
 	vTaskCoreAffinitySet(init_handle, (1 << 1) | (1 << 0));
 	vTaskStartScheduler();
 	for(;;);
