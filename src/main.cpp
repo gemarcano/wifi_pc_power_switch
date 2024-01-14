@@ -30,18 +30,19 @@ extern "C" {
 #include <memory>
 #include <expected>
 #include <atomic>
+#include <algorithm>
 
 // This secrets.h includes strings for WIFI_SSID and WIFI_PASSWORD
 #include "secrets.h"
 
 static QueueHandle_t comms;
-static pc_remote_button::pc_switch<22> switch_(false);
 static pc_remote_button::server server_;
 static safe_syslog<syslog<1024*128>> log;
 
 void switch_task(void*)
 {
 	unsigned data = 0;
+	static pc_remote_button::pc_switch<22> switch_(false);
 	for (;;)
 	{
 		xQueueReceive(comms, &data, portMAX_DELAY);
@@ -88,18 +89,12 @@ void network_task(void*)
 
 void run(const char* line)
 {
-	if (line[0] == 'a')
-	{
-		printf("aaaaaaaaaaaaaaaaaaaaaaaaah\r\n");
-	}
-
 	if (line[0] == 't')
 	{
 		unsigned long ms = strtoul(line + 1, nullptr, 0);
 		printf("Toggling switch for %lu milliseconds\r\n", ms);
-		switch_.set(true);
-		vTaskDelay(ms);
-		switch_.set(false);
+		int32_t data = std::clamp<unsigned long>(ms, 0, std::numeric_limits<int32_t>::max());
+		xQueueSendToBack(comms, &data, 0);
 	}
 
 	if (line[0] == 's')
