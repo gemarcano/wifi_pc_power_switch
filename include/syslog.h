@@ -9,6 +9,9 @@
 #include <string_view>
 #include <cstddef>
 #include <functional>
+#include <format>
+
+#include <sys/time.h>
 
 template<size_t max_size>
 class syslog
@@ -16,17 +19,20 @@ class syslog
 public:
 	void push(std::string_view str)
 	{
-		while (logs_.size())
+		if (str.size() > max_size)
+			return; // FIXME return some kind of error?
+
+		while (logs_.size() && str.size() > space_available_)
 		{
-			if (str.size() < space_available_)
-			{
-				space_available_ -= str.size();
-				logs_.emplace_back(str);
-				break;
-			}
-			space_available_ += logs_.front().size();
+			space_available_ += logs_.front().record.size();
 			logs_.pop_front();
 		}
+
+		space_available_ -= str.size();
+		timeval tm;
+		gettimeofday(&tm, nullptr);
+		logs_.emplace_back(std::string(str), std::move(tm));
+
 		if (callback_)
 		{
 			callback_(str);
@@ -43,9 +49,10 @@ public:
 		return max_size - space_available_;
 	}
 
-	std::string_view operator[](size_t index) const
+	std::string operator[](size_t index) const
 	{
-		return logs_[index];
+		auto& log = logs_[index];
+		return std::format("{}.{:0^6} - {}", log.time.tv_sec, log.time.tv_usec, log.record);
 	}
 
 	std::string_view back() const
@@ -56,8 +63,6 @@ public:
 	template<class Func, class... Args>
 	void register_push_callback(Func&& func, Args&&... args)
 	{
-		//using namespace std::placeholders;
-		//callback_ = std::bind(std::forward<Func>(func), std::forward<Args>(args)..., _1);
 		auto wrapper = [func, ... args = std::forward<Args>(args)](std::string_view str)
 		{
 			func(std::forward<Args>(args)..., str);
@@ -66,8 +71,12 @@ public:
 	}
 
 private:
+	struct log {
+		std::string record;
+		timeval time;
+	};
 	size_t space_available_ = max_size;
-	std::deque<std::string> logs_;
+	std::deque<log> logs_;
 	std::function<void(std::string_view)> callback_;
 };
 
@@ -110,7 +119,7 @@ public:
 	std::string operator[](size_t index) const
 	{
 		xSemaphoreTake(mutex_, portMAX_DELAY);
-		std::string result = log_[index];
+		std::string result = std::string(log_[index]);
 		xSemaphoreGive(mutex_);
 		return result;
 	}
