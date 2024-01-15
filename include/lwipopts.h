@@ -106,4 +106,7 @@
 #define SLIP_DEBUG                  LWIP_DBG_OFF
 #define DHCP_DEBUG                  LWIP_DBG_OFF
 
+#undef LWIP_PROVIDE_ERRNO
+#define LWIP_ERRNO_STDINCLUDE
+
 #endif//LWIPOPTS_H_
