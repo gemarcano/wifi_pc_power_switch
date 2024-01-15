@@ -219,8 +219,6 @@ void init_task(void*)
 	watchdog_enable(100, true);
 	xTaskCreate(watchdog_task, "prb_watchdog", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
 	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
-
-	printf("Started, in init\r\n");
 	log.register_push_callback(print_callback);
 
 	// Loop indefinitely until we connect to WiFi
@@ -237,9 +235,7 @@ void init_task(void*)
 		log.push("    DONE");
 		cyw43_arch_enable_sta_mode();
 
-		char buffer[64] = {};
-		snprintf(buffer, 64, "Connecting to SSID %s...: ", WIFI_SSID);
-		log.push(buffer);
+		log.push(std::format("Connecting to SSID {}:", WIFI_SSID));
 		if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
 			log.push("    FAILED");
 			continue;
@@ -253,12 +249,10 @@ void init_task(void*)
 
 		break;
 	}
-	char buffer[64] = {};
-	snprintf(buffer, 64, "Connected with IP address %s", ip4addr_ntoa(netif_ip4_addr(netif_list)));
-	log.push(buffer);
+	log.push(std::format("Connected with IP address {}", ip4addr_ntoa(netif_ip4_addr(netif_default))));
 
 	// FIXME should we call this somewhere?
-	//cyw43_arch_deinit();1
+	//cyw43_arch_deinit();
 
 	comms = xQueueCreate(1, sizeof(unsigned));
 
