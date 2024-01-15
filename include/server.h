@@ -1,73 +1,40 @@
 // SPDX-License-Identifier: GPL-2.0-or-later OR LGPL-2.1-or-later
-// SPDX-FileCopyrightText: Gabriel Marcano, 2023
+// SPDX-FileCopyrightText: Gabriel Marcano, 2023 - 2024
 /// @file
 
 #ifndef SERVER_H_
 #define SERVER_H_
 
-#include <pico/stdlib.h>
-
-#include <lwip/dns.h>
-#include <lwip/pbuf.h>
-#include <lwip/udp.h>
-#include <lwip/sockets.h>
-#include <lwip/netdb.h>
-
-#include <string>
 #include <cstdint>
 #include <memory>
 #include <expected>
+
+// forward declaration?
+struct addrinfo;
 
 namespace pc_remote_button
 {
 	class socket
 	{
 	public:
-		socket()
-		:socket_(-1)
-		{}
+		socket();
 
-		socket(int sock)
-		:socket_(sock)
-		{}
+		socket(int sock);
 
-		~socket()
-		{
-			if (socket_ != -1)
-			{
-				shutdown();
-				close();
-			}
-		}
+		~socket();
 
-		void shutdown()
-		{
-			::shutdown(socket_, SHUT_RDWR);
-		}
+		void shutdown();
 
-		void close()
-		{
-			::close(socket_);
-		}
+		void close();
 
-		socket(socket&& sock)
-		{
-			std::swap(socket_, sock.socket_);
-		}
+		socket(socket&& sock);
 
-		socket& operator=(socket&& sock)
-		{
-			std::swap(socket_, sock.socket_);
-			return *this;
-		}
+		socket& operator=(socket&& sock);
 
 		socket(const socket&) = delete;
 		socket& operator=(const socket&) = delete;
 
-		int get()
-		{
-			return socket_;
-		}
+		int get();
 	private:
 		int socket_;
 	};
@@ -75,11 +42,7 @@ namespace pc_remote_button
 	class addrinfo_deleter
 	{
 	public:
-		void operator()(addrinfo *info)
-		{
-			if (info)
-				freeaddrinfo(info);
-		}
+		void operator()(addrinfo *info);
 	};
 
 	using addrinfo_ptr = std::unique_ptr<addrinfo, addrinfo_deleter>;
@@ -88,85 +51,19 @@ namespace pc_remote_button
 	{
 	public:
 
-		~server()
-		{
-			if (socket_ipv4.get() != -1)
-			{
-				close();
-			}
-		}
+		~server();
 
-		int listen(uint16_t port)
-		{
-			// Look up IP address of NTP server first, in case we're looking at an
-			// NTP pool
-			const addrinfo hints = {
-				.ai_flags = 0,
-				.ai_family = AF_UNSPEC,
-				.ai_socktype = SOCK_STREAM,
-				.ai_protocol = 0,
-			};
-			addrinfo_ptr result = NULL;
-			addrinfo *result_ = NULL;
-			int err = getaddrinfo("0.0.0.0", std::to_string(port).c_str(), &hints, &result_);
-			if (err == -1)
-				return errno;
-			result.reset(result_);
-			result_ = NULL;
+		int listen(uint16_t port);
 
-			socket sock{::socket(result->ai_family, result->ai_socktype, result->ai_protocol)};
-			if (sock.get() == -1)
-				return errno;
+		std::expected<socket, int> accept();
 
-			err = bind(sock.get(), result->ai_addr, result->ai_addrlen);
-			if (err == -1)
-				return errno;
+		static int32_t handle_request(socket&& sock);
 
-			// FIXME Should we only have a queue depth of 1?
-			err = ::listen(sock.get(), 1);
-			if (err == -1)
-				return errno;
-
-			socket_ipv4 = std::move(sock);
-
-			return 0;
-		}
-
-		std::expected<socket, int> accept()
-		{
-			struct sockaddr_storage remote_addr;
-			socklen_t addr_size = sizeof(remote_addr);
-			int sock = ::accept(socket_ipv4.get(), reinterpret_cast<sockaddr*>(&remote_addr), &addr_size);
-			if (sock == -1)
-				return std::unexpected(errno);
-			return socket(sock);
-		}
-
-		static int32_t handle_request(socket&& sock)
-		{
-			int32_t result = -1;
-			char buffer[16] = {};
-			ssize_t amount = recv(sock.get(), buffer, 4, 0);
-			if (amount != 4)
-			{
-				return result;
-			}
-			memcpy(&result, buffer, sizeof(result));
-			result = ntohl(result);
-
-			return result;
-		}
-
-		void close()
-		{
-			socket_ipv4.shutdown();
-			socket_ipv4.close();
-		}
+		void close();
 
 	private:
 		socket socket_ipv4{-1};
 	};
-
 }
 
 #endif//SERVER_H_
