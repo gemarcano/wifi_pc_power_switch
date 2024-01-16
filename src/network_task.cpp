@@ -5,6 +5,7 @@
 #include <network_task.h>
 #include <switch_task.h>
 #include <server.h>
+#include <log.h>
 
 #include <cstdint>
 #include <cstdio>
@@ -23,7 +24,7 @@ void network_task(void*)
 			err = server_.listen(48686);
 			if (err != 0)
 			{
-				fprintf(stderr, "unable to listen on server, error %i\r\n", err);
+				sys_log.push(std::format("unable to listen on server, error {}", err));
 			}
 		} while (err != 0);
 
@@ -32,12 +33,19 @@ void network_task(void*)
 			auto result = server_.accept();
 			if (!result)
 			{
-				fprintf(stderr, "unable to accept socket, error %i\r\n", result.error());
+				sys_log.push(std::format("unable to accept socket, error {}", result.error()));
 				// FIXME what if the error is terminal? Are there any terminal errors?
-				break;
+				continue;
 			}
-			int32_t data = server_.handle_request(std::move(*result));
-			xQueueSendToBack(switch_comms.get(), &data, 0);
+			sys_log.push("new connection accepted");
+			auto request_result = server_.handle_request(std::move(*result));
+			if (result)
+			{
+				sys_log.push(std::format("Received network request with value {}", request_result.value()));
+				xQueueSendToBack(switch_comms.get(), &request_result.value(), 0);
+			}
+			else
+				sys_log.push(std::format("failed to handle request: {}", result.error()));
 		}
 
 		server_.close();

@@ -112,9 +112,9 @@ void init_task(void*)
 
 	xTaskCreate(switch_task, "prb_switch", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
 	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
-	xTaskCreate(network_task, "prb_network", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
+	xTaskCreate(network_task, "prb_network", 512, nullptr, tskIDLE_PRIORITY+1, &handle);
 	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
-	xTaskCreate(cli_task, "prb_cli", 256, nullptr, tskIDLE_PRIORITY+1, &handle);
+	xTaskCreate(cli_task, "prb_cli", 512, nullptr, tskIDLE_PRIORITY+1, &handle);
 	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
 
 	vTaskDelete(nullptr);

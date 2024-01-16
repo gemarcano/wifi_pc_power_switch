@@ -22,7 +22,7 @@ static void run(const char* line)
 	{
 		unsigned long ms = strtoul(line + 1, nullptr, 0);
 		printf("Toggling switch for %lu milliseconds\r\n", ms);
-		int32_t data = std::clamp<unsigned long>(ms, 0, std::numeric_limits<int32_t>::max());
+		unsigned data = std::clamp<unsigned>(ms, 0, std::numeric_limits<unsigned>::max());
 		xQueueSendToBack(switch_comms.get(), &data, 0);
 	}
 
@@ -40,6 +40,7 @@ static void run(const char* line)
 		for (auto& status: tasks)
 		{
 			printf("  task name: %s\r\n", status.pcTaskName);
+			printf("  task mark: %lu\r\n", status.usStackHighWaterMark);
 		}
 
 		char foo[2 * PICO_UNIQUE_BOARD_ID_SIZE_BYTES + 1];
