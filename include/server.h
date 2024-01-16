@@ -50,19 +50,16 @@ namespace pc_remote_button
 	class server
 	{
 	public:
-
-		~server();
-
 		int listen(uint16_t port);
 
 		std::expected<socket, int> accept();
 
-		static int32_t handle_request(socket&& sock);
+		static std::expected<unsigned, int> handle_request(socket&& sock);
 
 		void close();
 
 	private:
-		socket socket_ipv4{-1};
+		socket socket_ipv4;
 	};
 }
 

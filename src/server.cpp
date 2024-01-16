@@ -3,6 +3,7 @@
 /// @file
 
 #include <server.h>
+#include <log.h>
 
 #include <lwip/dns.h>
 #include <lwip/pbuf.h>
@@ -16,16 +17,21 @@ namespace pc_remote_button
 {
 	socket::socket()
 	:socket_(-1)
-	{}
+	{
+		sys_log.push(std::format("default socket {}", socket_));
+	}
 
 	socket::socket(int sock)
 	:socket_(sock)
-	{}
+	{
+		sys_log.push(std::format("new socket {}", socket_));
+	}
 
 	socket::~socket()
 	{
 		if (socket_ != -1)
 		{
+			sys_log.push(std::format("closing socket {}", socket_));
 			shutdown();
 			close();
 		}
@@ -39,10 +45,13 @@ namespace pc_remote_button
 	void socket::close()
 	{
 		::close(socket_);
+		socket_ = -1;
 	}
 
 	socket::socket(socket&& sock)
+	:socket_(-1)
 	{
+		sys_log.push(std::format("swap socket {} {}", sock.socket_, socket_));
 		std::swap(socket_, sock.socket_);
 	}
 
@@ -61,14 +70,6 @@ namespace pc_remote_button
 	{
 		if (info)
 			freeaddrinfo(info);
-	}
-
-	server::~server()
-	{
-		if (socket_ipv4.get() != -1)
-		{
-			close();
-		}
 	}
 
 	int server::listen(uint16_t port)
@@ -117,14 +118,15 @@ namespace pc_remote_button
 		return socket(sock);
 	}
 
-	int32_t server::handle_request(socket&& sock)
+	std::expected<unsigned, int> server::handle_request(socket&& sock)
 	{
-		int32_t result = -1;
+		socket sock_(std::move(sock));
+		unsigned result = 0;
 		char buffer[16] = {};
-		ssize_t amount = recv(sock.get(), buffer, 4, 0);
+		ssize_t amount = recv(sock_.get(), buffer, 4, 0);
 		if (amount != 4)
 		{
-			return result;
+			return std::unexpected(static_cast<int>(result));
 		}
 		memcpy(&result, buffer, sizeof(result));
 		result = ntohl(result);

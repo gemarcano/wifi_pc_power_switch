@@ -25,7 +25,7 @@ void switch_task(void*)
 	{
 		unsigned data = 0;
 		xQueueReceive(switch_comms.get(), &data, portMAX_DELAY);
-		sys_log.push("switch task: toggling pin");
+		sys_log.push(std::format("switch task: toggling pin for {} ms", data));
 		cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
 		switch_.set(true);
 		vTaskDelay(data);
