@@ -84,7 +84,8 @@ void init_task(void*)
 		if (cyw43_arch_init_with_country(CYW43_COUNTRY_USA))
 		{
 			sys_log.push("    FAILED");
-			continue;
+			vTaskDelete(handle);
+			for(;;);
 		}
 		sys_log.push("    DONE");
 		cyw43_arch_enable_sta_mode();
@@ -92,7 +93,8 @@ void init_task(void*)
 		sys_log.push(std::format("Connecting to SSID {}:", WIFI_SSID));
 		if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
 			sys_log.push("    FAILED");
-			continue;
+			vTaskDelete(handle);
+			for(;;);
 		}
 		sys_log.push("    DONE");
 
