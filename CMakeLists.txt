@@ -26,6 +26,7 @@ target_link_libraries(pc_remote_button
 
 target_compile_options(pc_remote_button PRIVATE
 	-fstack-usage
+	-Wno-psabi
 )
 
 target_include_directories(pc_remote_button PRIVATE

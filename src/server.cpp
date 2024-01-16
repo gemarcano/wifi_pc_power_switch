@@ -118,12 +118,11 @@ namespace pc_remote_button
 		return socket(sock);
 	}
 
-	std::expected<unsigned, int> server::handle_request(socket&& sock)
+	std::expected<unsigned, int> server::handle_request(socket sock)
 	{
-		socket sock_(std::move(sock));
 		unsigned result = 0;
 		char buffer[16] = {};
-		ssize_t amount = recv(sock_.get(), buffer, 4, 0);
+		ssize_t amount = recv(sock.get(), buffer, 4, 0);
 		if (amount != 4)
 		{
 			return std::unexpected(static_cast<int>(result));
