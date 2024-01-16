@@ -54,7 +54,7 @@ namespace pc_remote_button
 
 		std::expected<socket, int> accept();
 
-		static std::expected<unsigned, int> handle_request(socket&& sock);
+		static std::expected<unsigned, int> handle_request(socket sock);
 
 		void close();
 
