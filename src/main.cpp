@@ -87,6 +87,8 @@ void init_task(void*)
 			vTaskDelete(handle);
 			for(;;);
 		}
+		// Turn off powersave completely
+		cyw43_wifi_pm(&cyw43_state, CYW43_DEFAULT_PM & ~0xf);
 		sys_log.push("    DONE");
 		cyw43_arch_enable_sta_mode();
 
