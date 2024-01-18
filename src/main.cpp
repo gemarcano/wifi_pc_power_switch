@@ -39,7 +39,11 @@ extern "C" {
 
 void status_callback(netif *netif_)
 {
-	sys_log.push("status changed");
+	sys_log.push("status changed, trying to reconnect");
+	cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
+	while (!cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
+		sys_log.push("FAILED to reconnect, trying again");
+	}
 }
 
 void link_callback(netif *netif_)
