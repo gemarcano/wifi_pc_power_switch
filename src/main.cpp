@@ -40,15 +40,22 @@ extern "C" {
 void status_callback(netif *netif_)
 {
 	sys_log.push("status changed, trying to reconnect");
+	sys_log.push(std::format("  IP Address: {}", ip4addr_ntoa(netif_ip4_addr(netif_list))));
+	sys_log.push(std::format("  NETIF flags: {:#02x}", netif_default->flags));
 	cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
 	while (!cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
 		sys_log.push("FAILED to reconnect, trying again");
 	}
+	sys_log.push("hopefully reconnected");
+	sys_log.push(std::format("  IP Address: {}", ip4addr_ntoa(netif_ip4_addr(netif_list))));
+	sys_log.push(std::format("  NETIF flags: {:#02x}", netif_default->flags));
 }
 
 void link_callback(netif *netif_)
 {
 	sys_log.push("link changed");
+	sys_log.push(std::format("  IP Address: {}", ip4addr_ntoa(netif_ip4_addr(netif_list))));
+	sys_log.push(std::format("  NETIF flags: {:#02x}", netif_default->flags));
 }
 
 void print_callback(std::string_view str)
@@ -91,8 +98,6 @@ void init_task(void*)
 			vTaskDelete(handle);
 			for(;;);
 		}
-		// Turn off powersave completely
-		cyw43_wifi_pm(&cyw43_state, CYW43_DEFAULT_PM & ~0xf);
 		sys_log.push("    DONE");
 		cyw43_arch_enable_sta_mode();
 
@@ -102,6 +107,9 @@ void init_task(void*)
 			vTaskDelete(handle);
 			for(;;);
 		}
+
+		// Turn off powersave completely
+		cyw43_wifi_pm(&cyw43_state, CYW43_DEFAULT_PM & ~0xf);
 		sys_log.push("    DONE");
 
 		cyw43_arch_lwip_begin();
