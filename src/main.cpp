@@ -39,23 +39,37 @@ extern "C" {
 
 void status_callback(netif *netif_)
 {
-	sys_log.push("status changed, trying to reconnect");
-	sys_log.push(std::format("  IP Address: {}", ip4addr_ntoa(netif_ip4_addr(netif_list))));
-	sys_log.push(std::format("  NETIF flags: {:#02x}", netif_default->flags));
-	cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
-	while (!cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
-		sys_log.push("FAILED to reconnect, trying again");
-	}
-	sys_log.push("hopefully reconnected");
-	sys_log.push(std::format("  IP Address: {}", ip4addr_ntoa(netif_ip4_addr(netif_list))));
-	sys_log.push(std::format("  NETIF flags: {:#02x}", netif_default->flags));
+	sys_log.push("status changed");
+	sys_log.push(std::format("  IP Address: {}", ip4addr_ntoa(netif_ip4_addr(netif_))));
+	sys_log.push(std::format("  NETIF flags: {:#02x}", netif_->flags));
+	int32_t rssi = 0;
+	cyw43_wifi_get_rssi(&cyw43_state, &rssi);
+	sys_log.push(std::format("  RSSI: {}", rssi));
+	sys_log.push(std::format("Wifi state: {}", cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA)));
 }
 
 void link_callback(netif *netif_)
 {
 	sys_log.push("link changed");
-	sys_log.push(std::format("  IP Address: {}", ip4addr_ntoa(netif_ip4_addr(netif_list))));
-	sys_log.push(std::format("  NETIF flags: {:#02x}", netif_default->flags));
+	sys_log.push(std::format("  IP Address: {}", ip4addr_ntoa(netif_ip4_addr(netif_))));
+	sys_log.push(std::format("  NETIF flags: {:#02x}", netif_->flags));
+	int32_t rssi = 0;
+	cyw43_wifi_get_rssi(&cyw43_state, &rssi);
+	sys_log.push(std::format("  RSSI: {}", rssi));
+	sys_log.push(std::format("Wifi state: {}", cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA)));
+	if (!(netif_->flags & NETIF_FLAG_LINK_UP))
+	{
+		sys_log.push("trying to refresh link");
+		cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
+		int connect_result;
+		while (connect_result = cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 30000)) {
+			sys_log.push(std::format("FAILED to reconnect, result {}, trying again", connect_result));
+		}
+		sys_log.push("hopefully reconnected");
+		sys_log.push(std::format("  IP Address: {}", ip4addr_ntoa(netif_ip4_addr(netif_))));
+		sys_log.push(std::format("  NETIF flags: {:#02x}", netif_->flags));
+		sys_log.push(std::format("Wifi state: {}", cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA)));
+	}
 }
 
 void print_callback(std::string_view str)
@@ -100,22 +114,22 @@ void init_task(void*)
 		}
 		sys_log.push("    DONE");
 		cyw43_arch_enable_sta_mode();
+		// Turn off powersave completely
+		cyw43_wifi_pm(&cyw43_state, CYW43_DEFAULT_PM & ~0xf);
+		// Setup link/status callbacks
+		cyw43_arch_lwip_begin();
+		netif_set_status_callback(netif_default, status_callback);
+		netif_set_link_callback(netif_default, link_callback);
+		cyw43_arch_lwip_end();
 
 		sys_log.push(std::format("Connecting to SSID {}:", WIFI_SSID));
-		if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
+		if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 30000)) {
 			sys_log.push("    FAILED");
 			vTaskDelete(handle);
 			for(;;);
 		}
 
-		// Turn off powersave completely
-		cyw43_wifi_pm(&cyw43_state, CYW43_DEFAULT_PM & ~0xf);
 		sys_log.push("    DONE");
-
-		cyw43_arch_lwip_begin();
-		netif_set_status_callback(netif_default, status_callback);
-		netif_set_link_callback(netif_default, link_callback);
-		cyw43_arch_lwip_end();
 
 		break;
 	}
