@@ -16,6 +16,7 @@ add_executable(pc_remote_button
 	src/network_task.cpp
 	src/cli_task.cpp
 	src/FreeRTOS_support.cpp
+	src/wifi_management_task.cpp
 )
 
 target_link_libraries(pc_remote_button
