@@ -17,21 +17,16 @@ namespace pc_remote_button
 {
 	socket::socket()
 	:socket_(-1)
-	{
-		sys_log.push(std::format("default socket {}", socket_));
-	}
+	{}
 
 	socket::socket(int sock)
 	:socket_(sock)
-	{
-		sys_log.push(std::format("new socket {}", socket_));
-	}
+	{}
 
 	socket::~socket()
 	{
 		if (socket_ != -1)
 		{
-			sys_log.push(std::format("closing socket {}", socket_));
 			shutdown();
 			close();
 		}
@@ -51,7 +46,6 @@ namespace pc_remote_button
 	socket::socket(socket&& sock)
 	:socket_(-1)
 	{
-		sys_log.push(std::format("swap socket {} {}", sock.socket_, socket_));
 		std::swap(socket_, sock.socket_);
 	}
 
