@@ -44,12 +44,41 @@ void print_callback(std::string_view str)
 	printf("syslog: %.*s\r\n", str.size(), str.data());
 }
 
-void watchdog_task(void*)
+std::atomic_int watchdog_cpu0_status = 0;
+void watchdog_cpu0_task(void*)
 {
 	for(;;)
 	{
-		watchdog_update();
-		vTaskDelay(80);
+		watchdog_cpu0_status = 1;
+		vTaskDelay(50);
+	}
+}
+
+std::atomic_int watchdog_cpu1_status = 0;
+void watchdog_cpu1_task(void*)
+{
+	for(;;)
+	{
+		watchdog_cpu1_status = 1;
+		vTaskDelay(50);
+	}
+}
+
+void watchdog_task(void*)
+{
+	// The watchdog period needs to be long enough so long lock periods
+	// (apparently something in the wifi subsystem holds onto a lock for a
+	// while) are tolerated.
+	watchdog_enable(200, true);
+	for(;;)
+	{
+		if (watchdog_cpu1_status && watchdog_cpu0_status)
+		{
+			watchdog_update();
+			watchdog_cpu0_status = 0;
+			watchdog_cpu1_status = 0;
+		}
+		vTaskDelay(30);
 	}
 }
 
@@ -60,11 +89,19 @@ void init_task(void*)
 	// Might be the Linux USB stack getting setup that's causing the delay
 	vTaskDelay(1000);
 
-	// Initialize watchdog hardware
+	// Watchdog priority is higher
+	// Dedicated watchdog tasks on each core, and have a central watchdog task
+	// aggregate the watchdog flags from both other tasks.
+	// If one core locks up, the central task will detect it and not pet the
+	// watchdog, or it will itself be hung, leading to a system reset.
 	TaskHandle_t handle;
-	watchdog_enable(100, true);
-	xTaskCreate(watchdog_task, "prb_watchdog", 256, nullptr, tskIDLE_PRIORITY+2, &handle);
-	vTaskCoreAffinitySet(handle, (1 << 1) | (1 << 0));
+	xTaskCreate(watchdog_cpu0_task, "watchdog_cpu0", 256, nullptr, tskIDLE_PRIORITY+2, &handle);
+	vTaskCoreAffinitySet(handle, (1 << 0) );
+	xTaskCreate(watchdog_cpu1_task, "watchdog_cpu1", 256, nullptr, tskIDLE_PRIORITY+2, &handle);
+	vTaskCoreAffinitySet(handle, (1 << 1) );
+	xTaskCreate(watchdog_task, "watchdog", 256, nullptr, tskIDLE_PRIORITY+2, &handle);
+	vTaskCoreAffinitySet(handle, (1 << 0) | (1 << 1) );
+
 	sys_log.register_push_callback(print_callback);
 
 	xTaskCreate(sctu::wifi_management_task, "prb_wifi", 512, nullptr, tskIDLE_PRIORITY+2, &handle);
