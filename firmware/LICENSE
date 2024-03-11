@@ -1,0 +1,14 @@
+This software is released under the following licenses:
+ - GPL v2 or later
+ - LGPL v2.1 or later
+
+You should be able to find the text to the GPL v2, GPL v3, LGPL v2.1, and LGPL
+v3.0 licenses in the root directory of this repository.
+
+At the time of this writing all of the available licenses could be found on
+https://www.gnu.org/licenses/licenses.html
+
+This project include the tap-driver.sh file from the Automake project, which is
+licensed GPLv2 or later. This file is used for building unit tests, so it does
+not impact the licensing of the generated object files or even the unit tests
+(as far as I understand, as it's just a tool).
