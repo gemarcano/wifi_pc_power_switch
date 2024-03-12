@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: Gabriel Marcano, 2023
 /// @file
 
-#ifndef SYSLOG_H_
-#define SYSLOG_H_
+#ifndef PCRB_SYSLOG_H_
+#define PCRB_SYSLOG_H_
 
 #include <deque>
 #include <string_view>
@@ -12,6 +12,12 @@
 #include <format>
 
 #include <sys/time.h>
+
+#include <FreeRTOS.h>
+#include <semphr.h>
+
+namespace pcrb
+{
 
 template<size_t max_size>
 class syslog
@@ -80,9 +86,6 @@ private:
 	std::function<void(std::string_view)> callback_;
 };
 
-#include <FreeRTOS.h>
-#include <semphr.h>
-
 template<class syslog>
 class safe_syslog
 {
@@ -146,4 +149,6 @@ private:
 	SemaphoreHandle_t mutex_;
 };
 
-#endif//SYSLOG_H_
+}
+
+#endif//PCRB_SYSLOG_H_

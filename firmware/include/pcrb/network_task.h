@@ -2,9 +2,14 @@
 // SPDX-FileCopyrightText: Gabriel Marcano, 2023 - 2024
 /// @file
 
-#ifndef SERVER_TASK_H_
-#define SERVER_TASK_H_
+#ifndef PCRB_SERVER_TASK_H_
+#define PCRB_SERVER_TASK_H_
+
+namespace pcrb
+{
 
 void network_task(void*);
 
-#endif//SERVER_TASK_H_
+}
+
+#endif//PCRB_SERVER_TASK_H_

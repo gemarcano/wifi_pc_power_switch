@@ -2,19 +2,17 @@
 // SPDX-FileCopyrightText: Gabriel Marcano, 2023 - 2024
 /// @file
 
-#include <ntp.h>
+#include <pcrb/ntp.h>
 
-extern "C" {
 #include <FreeRTOS.h>
 #include <queue.h>
 #include <task.h>
-}
 
 #include <pico/stdlib.h>
 #include <pico/cyw43_arch.h>
 
-#include <switch.h>
-#include <server.h>
+#include <pcrb/switch.h>
+#include <pcrb/server.h>
 
 #include <lwip/dns.h>
 #include <lwip/pbuf.h>

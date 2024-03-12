@@ -2,11 +2,16 @@
 // SPDX-FileCopyrightText: Gabriel Marcano, 2023
 /// @file
 
-#ifndef LOG_H_
-#define LOG_H_
+#ifndef PCRB_LOG_H_
+#define PCRB_LOG_H_
 
-#include <syslog.h>
+#include <pcrb/syslog.h>
+
+namespace pcrb
+{
 
 extern safe_syslog<syslog<1024*128>> sys_log;
 
-#endif//LOG_H_
+}
+
+#endif//PCRB_LOG_H_

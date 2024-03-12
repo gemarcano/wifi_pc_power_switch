@@ -2,25 +2,25 @@
 // SPDX-FileCopyrightText: Gabriel Marcano, 2023 - 2024
 /// @file
 
-#include <switch_task.h>
-
-#include <switch.h>
-#include <log.h>
+#include <pcrb/switch_task.h>
+#include <pcrb/switch.h>
+#include <pcrb/log.h>
 
 #include <pico/stdlib.h>
 #include <pico/cyw43_arch.h>
 
-extern "C" {
 #include <FreeRTOS.h>
 #include <queue.h>
 #include <task.h>
-}
+
+namespace pcrb
+{
 
 switch_queue switch_comms;
 
 void switch_task(void*)
 {
-	static pc_remote_button::pc_switch<22> switch_(false);
+	static pcrb::pc_switch<22> switch_(false);
 	for (;;)
 	{
 		unsigned data = 0;
@@ -32,4 +32,6 @@ void switch_task(void*)
 		cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
 		switch_.set(false);
 	}
+}
+
 }

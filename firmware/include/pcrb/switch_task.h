@@ -2,14 +2,15 @@
 // SPDX-FileCopyrightText: Gabriel Marcano, 2023 - 2024
 /// @file
 
-#ifndef SWITCH_TASK_H_
-#define SWITCH_TASK_H_
+#ifndef PCRB_SWITCH_TASK_H_
+#define PCRB_SWITCH_TASK_H_
 
-extern "C" {
 #include <FreeRTOS.h>
 #include <queue.h>
 #include <task.h>
-}
+
+namespace pcrb
+{
 
 // get() must be called from within a FreeRTOS task!
 class switch_queue
@@ -33,4 +34,6 @@ private:
 extern switch_queue switch_comms;
 void switch_task(void*);
 
-#endif//SWITCH_TASK_H_
+}
+
+#endif//PCRB_ SWITCH_TASK_H_
