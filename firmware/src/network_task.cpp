@@ -2,18 +2,21 @@
 // SPDX-FileCopyrightText: Gabriel Marcano, 2023 - 2024
 /// @file
 
-#include <network_task.h>
-#include <switch_task.h>
-#include <server.h>
-#include <log.h>
+#include <pcrb/network_task.h>
+#include <pcrb/switch_task.h>
+#include <pcrb/server.h>
+#include <pcrb/log.h>
 
 #include <cstdint>
 #include <cstdio>
 
+namespace pcrb
+{
+
 void network_task(void*)
 {
 	// Loop endlessly, restarting the server if there are errors
-	pc_remote_button::server server_;
+	server server_;
 
 	for(;;)
 	{
@@ -52,4 +55,4 @@ void network_task(void*)
 	}
 }
 
-
+}

@@ -2,9 +2,9 @@
 // SPDX-FileCopyrightText: Gabriel Marcano, 2023 - 2024
 /// @file
 
-#include <cli_task.h>
-#include <switch_task.h>
-#include <log.h>
+#include <pcrb/cli_task.h>
+#include <pcrb/switch_task.h>
+#include <pcrb/log.h>
 
 #include <pico/unique_id.h>
 #include <pico/stdlib.h>
@@ -16,6 +16,8 @@
 #include <cstdio>
 #include <algorithm>
 
+using pcrb::sys_log;
+
 static void run(const char* line)
 {
 	if (line[0] == 't')
@@ -23,7 +25,7 @@ static void run(const char* line)
 		unsigned long ms = strtoul(line + 1, nullptr, 0);
 		printf("Toggling switch for %lu milliseconds\r\n", ms);
 		unsigned data = std::clamp<unsigned>(ms, 0, std::numeric_limits<unsigned>::max());
-		xQueueSendToBack(switch_comms.get(), &data, 0);
+		xQueueSendToBack(pcrb::switch_comms.get(), &data, 0);
 	}
 
 	if (line[0] == 's')
@@ -41,6 +43,7 @@ static void run(const char* line)
 		cyw43_wifi_get_pm(&cyw43_state, &pm_state);
 		printf("power mode: 0x%08lX\r\n", pm_state);
 		printf("ticks: %lu\r\n", xTaskGetTickCount());
+		printf("FreeRTOS Heap Free: %u\r\n", xPortGetFreeHeapSize());
 		UBaseType_t number_of_tasks = uxTaskGetNumberOfTasks();
 		printf("Tasks active: %lu\r\n", number_of_tasks);
 		std::vector<TaskStatus_t> tasks(number_of_tasks);
@@ -78,6 +81,9 @@ static void run(const char* line)
 		for(;;);
 	}
 }
+
+namespace pcrb
+{
 
 void cli_task(void*)
 {
@@ -119,4 +125,6 @@ void cli_task(void*)
 			printf("WTF, we got an EOF?\r\n");
 		}
 	}
+}
+
 }

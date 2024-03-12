@@ -2,7 +2,12 @@
 // SPDX-FileCopyrightText: Gabriel Marcano, 2023 - 2024
 /// @file
 
-#include <log.h>
-#include <syslog.h>
+#include <pcrb/log.h>
+#include <pcrb/syslog.h>
+
+namespace pcrb
+{
 
 safe_syslog<syslog<1024*128>> sys_log;
+
+}

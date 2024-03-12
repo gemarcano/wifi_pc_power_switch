@@ -2,9 +2,14 @@
 // SPDX-FileCopyrightText: Gabriel Marcano, 2023 - 2024
 /// @file
 
-#ifndef CLI_TASK_H_
-#define CLI_TASK_H_
+#ifndef PCRB_CLI_TASK_H_
+#define PCRB_CLI_TASK_H_
+
+namespace pcrb
+{
 
 void cli_task(void*);
 
-#endif//CLI_TASK_H_
+}
+
+#endif//PCRB_CLI_TASK_H_
