@@ -16,8 +16,6 @@
 // This secrets.h includes strings for WIFI_SSID and WIFI_PASSWORD
 #include "secrets.h"
 
-#include <hardware/structs/mpu.h>
-
 #include <pico/unique_id.h>
 #include <pico/stdlib.h>
 #include <pico/cyw43_arch.h>
@@ -48,41 +46,10 @@ void print_callback(std::string_view str)
 
 using pcrb::sys_log;
 
-static void initialize_mpu()
-{
-	mpu_hw->ctrl = 5; // enable mpu with background default map
-	mpu_hw->rbar = (0x0 & ~0xFFu)| M0PLUS_MPU_RBAR_VALID_BITS | 0;
-	mpu_hw->rasr =
-		1             // enable region
-		| (0x7 << 1)  // size 2^(7 + 1) = 256
-		| (0 << 8)    // Subregion disable-- don't disable any
-		| 0x10000000; // Disable instruction fetch, disallow all
-}
-
-static void init_cpu_task(void* val)
-{
-	std::atomic_bool *cpu_init = reinterpret_cast<std::atomic_bool*>(val);
-	initialize_mpu();
-	*cpu_init = true;
-	vTaskDelete(nullptr);
-	for(;;);
-}
-
 void init_task(void*)
 {
-	std::array<std::atomic_bool, 2> cpu_init = {};
 	stdio_init_all();
 	pcrb::initialize_watchdog_tasks();
-	xTaskCreateAffinitySet(
-		init_cpu_task, "pcrb_cpu0", 256, &cpu_init[0], tskIDLE_PRIORITY+2, CPU0_MASK, nullptr);
-	xTaskCreateAffinitySet(
-		init_cpu_task, "pcrb_cpu1", 256, &cpu_init[1], tskIDLE_PRIORITY+2, CPU1_MASK, nullptr);
-
-	// Wait until CPU init tasks are done
-    while(!cpu_init[0] || !cpu_init[1])
-    {
-        taskYIELD();
-    }
 
 	sys_log.register_push_callback(print_callback);
 	xTaskCreateAffinitySet(pcrb::wifi_management_task, "pcrb_wifi", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
