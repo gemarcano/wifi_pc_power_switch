@@ -5,6 +5,8 @@
 #ifndef FREERTOSCONFIG_H_
 #define FREERTOSCONFIG_H_
 
+#define configMAX_TASK_NAME_LEN                 32
+
 // Scheduler related options
 #define configUSE_PREEMPTION                    1
 #define configUSE_TICKLESS_IDLE                 0

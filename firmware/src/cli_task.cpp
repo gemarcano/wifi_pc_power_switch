@@ -11,6 +11,7 @@
 #include <pico/cyw43_arch.h>
 #include <pico/bootrom.h>
 #include <hardware/watchdog.h>
+#include <hardware/structs/mpu.h>
 
 #include <cstdint>
 #include <cstdio>
@@ -67,8 +68,9 @@ static void run(const char* line)
 
 	if (line[0] == 'r')
 	{
-		printf("Rebooting...\r\n");
+		printf("Rebooting into programming mode...\r\n");
 		fflush(stdout);
+		mpu_hw->ctrl = 0; // disable mpu
 		reset_usb_boot(0,0);
 	}
 
@@ -76,7 +78,7 @@ static void run(const char* line)
 	{
 		printf("Killing (hanging)...\r\n");
 		fflush(stdout);
-		TaskHandle_t handle = xTaskGetHandle("prb_watchdog");
+		TaskHandle_t handle = xTaskGetHandle("pcrb_watchdog_cpu0");
 		vTaskDelete(handle);
 		for(;;);
 	}
