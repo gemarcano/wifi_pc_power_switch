@@ -21,8 +21,8 @@ namespace pcrb
 constexpr const int cpu_cores = 2;
 static std::array<std::atomic_bool, cpu_cores> watchdog_cpu_status;
 static std::array<const char*, cpu_cores> watchdog_task_names {
-	"sctu_watchdog_cpu0",
-	"sctu_watchdog_cpu1"
+	"pcrb_watchdog_cpu0",
+	"pcrb_watchdog_cpu1"
 };
 
 void watchdog_cpu_task(void* status)
@@ -76,7 +76,7 @@ void initialize_watchdog_tasks()
 	}
 	xTaskCreateAffinitySet(
 		watchdog_task,
-		"sctu_watchdog_core",
+		"pcrb_watchdog_core",
 		configMINIMAL_STACK_SIZE,
 		nullptr,
 		tskIDLE_PRIORITY+2,
