@@ -11,7 +11,6 @@
 #include <pico/cyw43_arch.h>
 #include <pico/bootrom.h>
 #include <hardware/watchdog.h>
-#include <hardware/structs/mpu.h>
 
 #include <cstdint>
 #include <cstdio>
@@ -70,7 +69,6 @@ static void run(const char* line)
 	{
 		printf("Rebooting into programming mode...\r\n");
 		fflush(stdout);
-		mpu_hw->ctrl = 0; // disable mpu
 		reset_usb_boot(0,0);
 	}
 
