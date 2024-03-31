@@ -3,7 +3,8 @@
 /// @file
 
 #include <pcrb/server.h>
-#include <pcrb/log.h>
+
+#include <gpico/log.h>
 
 #include <lwip/dns.h>
 #include <lwip/pbuf.h>
@@ -12,6 +13,9 @@
 #include <lwip/netdb.h>
 
 #include <string>
+#include <format>
+
+using gpico::sys_log;
 
 namespace pcrb
 {

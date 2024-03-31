@@ -4,19 +4,20 @@
 
 #include <pcrb/cli_task.h>
 #include <pcrb/switch_task.h>
-#include <pcrb/log.h>
+
+#include <gpico/log.h>
 
 #include <pico/unique_id.h>
 #include <pico/stdlib.h>
 #include <pico/cyw43_arch.h>
 #include <pico/bootrom.h>
-#include <hardware/watchdog.h>
 
 #include <cstdint>
 #include <cstdio>
 #include <algorithm>
+#include <limits>
 
-using pcrb::sys_log;
+using gpico::sys_log;
 
 static void run(const char* line)
 {
@@ -58,10 +59,10 @@ static void run(const char* line)
 		pico_get_unique_board_id_string(foo, sizeof(foo));
 		printf("unique id: %s\r\n", foo);
 
-		printf("log size: %zu\r\n", sys_log.size());
+		printf("log size: %u\r\n", sys_log.size());
 		for (size_t i = 0; i < sys_log.size(); ++i)
 		{
-			printf("log %zu: %s\r\n", i, sys_log[i].c_str());
+			printf("log %u: %s\r\n", i, sys_log[i].c_str());
 		}
 	}
 
@@ -76,7 +77,7 @@ static void run(const char* line)
 	{
 		printf("Killing (hanging)...\r\n");
 		fflush(stdout);
-		TaskHandle_t handle = xTaskGetHandle("pcrb_watchdog_cpu0");
+		TaskHandle_t handle = xTaskGetHandle("gpico_watchdog_cpu0");
 		vTaskDelete(handle);
 		for(;;);
 	}
@@ -92,12 +93,13 @@ void cli_task(void*)
 	printf("> ");
 	for(;;)
 	{
+		fflush(stdout);
 		int c = fgetc(stdin);
 		if (c != EOF)
 		{
 			if (c == '\r')
 			{
-				printf("\n");
+				printf("\r\n");
 				line[pos] = '\0';
 				run(line);
 				pos = 0;
