@@ -3,10 +3,10 @@
 /// @file
 
 #include <pcrb/wifi_management_task.h>
-#include <pcrb/log.h>
-#include <pcrb/syslog.h>
 // This secrets.h includes strings for WIFI_SSID and WIFI_PASSWORD
 #include "secrets.h"
+
+#include <gpico/log.h>
 
 #include <pico/cyw43_arch.h>
 #include <lwip/netdb.h>
@@ -17,6 +17,9 @@
 
 #include <cstdint>
 #include <atomic>
+#include <format>
+
+using gpico::sys_log;
 
 namespace pcrb
 {

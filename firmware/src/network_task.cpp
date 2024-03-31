@@ -5,10 +5,14 @@
 #include <pcrb/network_task.h>
 #include <pcrb/switch_task.h>
 #include <pcrb/server.h>
-#include <pcrb/log.h>
+
+#include <gpico/log.h>
 
 #include <cstdint>
 #include <cstdio>
+#include <format>
+
+using gpico::sys_log;
 
 namespace pcrb
 {

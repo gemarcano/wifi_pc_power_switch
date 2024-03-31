@@ -4,7 +4,8 @@
 
 #include <pcrb/switch_task.h>
 #include <pcrb/switch.h>
-#include <pcrb/log.h>
+
+#include <gpico/log.h>
 
 #include <pico/stdlib.h>
 #include <pico/cyw43_arch.h>
@@ -12,6 +13,10 @@
 #include <FreeRTOS.h>
 #include <queue.h>
 #include <task.h>
+
+#include <format>
+
+using gpico::sys_log;
 
 namespace pcrb
 {
