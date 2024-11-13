@@ -52,6 +52,8 @@ void print_callback(std::string_view str)
 
 using gpico::sys_log;
 
+static std::atomic_bool usb_connected = false;
+
 // FreeRTOS task to handle USB tasks
 static void usb_device_task(void*)
 {
@@ -65,6 +67,7 @@ static void usb_device_task(void*)
 		// As a workaround, use an atomic variable to get the result of this
 		// function, and read from it elsewhere
 		gpico::cdc.update();
+		usb_connected = tud_cdc_connected();
 		taskYIELD();
 	}
 }
@@ -74,17 +77,6 @@ void init_task(void*)
 	gpico::initialize_watchdog_tasks();
 
 	sys_log.register_push_callback(print_callback);
-	xTaskCreateAffinitySet(pcrb::wifi_management_task, "pcrb_wifi", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
-
-	// Wait for wifi to be ready before continuing, this variable is set by the
-	// wifi management task.
-	while (!pcrb::wifi_initd);
-
-	sys_log.push(std::format("Connected with IP address {}", ip4addr_ntoa(netif_ip4_addr(netif_default))));
-
-	// FIXME should we call this somewhere?
-	//cyw43_arch_deinit();
-
 	// Anything USB related needs to be on the same core-- just use core 2
 	xTaskCreateAffinitySet(
 		usb_device_task,
@@ -95,8 +87,25 @@ void init_task(void*)
 		CPU1_MASK,
 		nullptr);
 
+	while (!usb_connected) {
+		taskYIELD();
+	}
+	xTaskCreateAffinitySet(pcrb::wifi_management_task, "pcrb_wifi", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
+
+	// Wait for wifi to be ready before continuing, this variable is set by the
+	// wifi management task.
+	while (!pcrb::wifi_initd) {
+		taskYIELD();
+	}
+
+	sys_log.push(std::format("Connected with IP address {}", ip4addr_ntoa(netif_ip4_addr(netif_default))));
+
+	// FIXME should we call this somewhere?
+	//cyw43_arch_deinit();
+
 	xTaskCreateAffinitySet(pcrb::switch_task, "pcrb_switch", 256, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
 	xTaskCreateAffinitySet(pcrb::network_task, "pcrb_network", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
+	// FIXME for some reason moving this to run at the same time as wifi_management_task makes the pico crash...
 	xTaskCreateAffinitySet(pcrb::cli_task, "pcrb_cli", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
 
 	vTaskDelete(nullptr);
@@ -108,7 +117,7 @@ int main()
 	// Alright, based on reading the pico-sdk, it's pretty much just a bad idea
 	// to do ANYTHING outside of a FreeRTOS task when using FreeRTOS with the
 	// pico-sdk... just do all required initialization in the init task
-	xTaskCreateAffinitySet(init_task, "pcrb_init", 256, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
+	xTaskCreateAffinitySet(init_task, "pcrb_init", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
 	vTaskStartScheduler();
 	for(;;);
 	return 0;

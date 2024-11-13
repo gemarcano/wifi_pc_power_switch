@@ -59,6 +59,10 @@ static void init_wifi()
 			break;
 		}
 		sys_log.push(std::format("    FAILED: {}", result));
+
+		int32_t rssi = 0;
+		cyw43_wifi_get_rssi(&cyw43_state, &rssi);
+		sys_log.push(std::format("link: RSSI: {}", rssi));
 	}
 }
 

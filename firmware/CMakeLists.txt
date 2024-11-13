@@ -31,6 +31,7 @@ target_compile_options(pc_remote_button PRIVATE
 	$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra>
 	-fstack-usage
 	-Wno-psabi
+	-DPICO_STDIO_SHORT_CIRCUIT_CLIB_FUNCS=0
 )
 
 target_include_directories(pc_remote_button PRIVATE
@@ -40,9 +41,6 @@ target_include_directories(pc_remote_button PRIVATE
 target_compile_features(pc_remote_button PRIVATE
 	cxx_std_23
 )
-
-pico_set_printf_implementation(pc_remote_button compiler)
-pico_set_stdio_implementation(pc_remote_button compiler)
 
 if (DEFINED HOSTNAME)
 	add_compile_definitions(CYW43_HOST_NAME=\"${HOSTNAME}\")
