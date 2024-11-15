@@ -70,7 +70,11 @@ static void run(const char* line)
 	{
 		printf("Rebooting into programming mode...\r\n");
 		fflush(stdout);
+		vTaskSuspendAll();
+		taskENTER_CRITICAL();
 		reset_usb_boot(0,0);
+		taskEXIT_CRITICAL();
+		xTaskResumeAll();
 	}
 
 	if (line[0] == 'k')

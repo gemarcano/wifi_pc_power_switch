@@ -52,8 +52,6 @@ void print_callback(std::string_view str)
 
 using gpico::sys_log;
 
-static std::atomic_bool usb_connected = false;
-
 // FreeRTOS task to handle USB tasks
 static void usb_device_task(void*)
 {
@@ -67,7 +65,6 @@ static void usb_device_task(void*)
 		// As a workaround, use an atomic variable to get the result of this
 		// function, and read from it elsewhere
 		gpico::cdc.update();
-		usb_connected = tud_cdc_connected();
 		taskYIELD();
 	}
 }
@@ -87,9 +84,6 @@ void init_task(void*)
 		CPU1_MASK,
 		nullptr);
 
-	while (!usb_connected) {
-		taskYIELD();
-	}
 	xTaskCreateAffinitySet(pcrb::wifi_management_task, "pcrb_wifi", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
 
 	// Wait for wifi to be ready before continuing, this variable is set by the
