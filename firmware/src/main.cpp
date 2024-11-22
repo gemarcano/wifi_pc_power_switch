@@ -84,6 +84,7 @@ void init_task(void*)
 		CPU1_MASK,
 		nullptr);
 
+	xTaskCreateAffinitySet(pcrb::cli_task, "pcrb_cli", 512, nullptr, tskIDLE_PRIORITY+1, CPUS_MASK, nullptr);
 	xTaskCreateAffinitySet(pcrb::wifi_management_task, "pcrb_wifi", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
 
 	// Wait for wifi to be ready before continuing, this variable is set by the
@@ -99,8 +100,6 @@ void init_task(void*)
 
 	xTaskCreateAffinitySet(pcrb::switch_task, "pcrb_switch", 256, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
 	xTaskCreateAffinitySet(pcrb::network_task, "pcrb_network", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
-	// FIXME for some reason moving this to run at the same time as wifi_management_task makes the pico crash...
-	xTaskCreateAffinitySet(pcrb::cli_task, "pcrb_cli", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
 
 	vTaskDelete(nullptr);
 	for(;;);
@@ -111,7 +110,7 @@ int main()
 	// Alright, based on reading the pico-sdk, it's pretty much just a bad idea
 	// to do ANYTHING outside of a FreeRTOS task when using FreeRTOS with the
 	// pico-sdk... just do all required initialization in the init task
-	xTaskCreateAffinitySet(init_task, "pcrb_init", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
+	xTaskCreateAffinitySet(init_task, "pcrb_init", 512, nullptr, tskIDLE_PRIORITY+1, CPUS_MASK, nullptr);
 	vTaskStartScheduler();
 	for(;;);
 	return 0;
