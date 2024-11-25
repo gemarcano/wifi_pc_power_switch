@@ -65,7 +65,6 @@ static void usb_device_task(void*)
 		// As a workaround, use an atomic variable to get the result of this
 		// function, and read from it elsewhere
 		gpico::cdc.update();
-		taskYIELD();
 	}
 }
 
