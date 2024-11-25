@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 
+set(PICO_BOARD pico_w)
+set(TINYUSB_OPT_OS OPT_OS_FREERTOS)
+
 include(pico_sdk_import.cmake)
 include(FreeRTOS_Kernel_import.cmake)
 include(gpico_import.cmake)
@@ -7,6 +10,7 @@ include(gpico_import.cmake)
 project(pc_remote_button)
 
 pico_sdk_init()
+
 
 add_executable(pc_remote_button
 	src/main.cpp
