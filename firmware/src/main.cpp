@@ -16,6 +16,7 @@
 #include <gpico/log.h>
 #include <gpico/watchdog.h>
 #include <gpico/cdc_device.h>
+#include <gpico/usb.h>
 
 #include <pico/unique_id.h>
 #include <pico/stdlib.h>
@@ -52,36 +53,12 @@ void print_callback(std::string_view str)
 
 using gpico::sys_log;
 
-// FreeRTOS task to handle USB tasks
-static void usb_device_task(void*)
-{
-	tusb_init();
-	for(;;)
-	{
-		tud_task();
-		// tud_cdc_connected() must be called in the same task as tud_task, as
-		// an internal data structure is shared without locking between both
-		// functions. See https://github.com/hathach/tinyusb/issues/1472
-		// As a workaround, use an atomic variable to get the result of this
-		// function, and read from it elsewhere
-		gpico::cdc.update();
-	}
-}
-
 void init_task(void*)
 {
 	gpico::initialize_watchdog_tasks();
+	gpico::initialize_usb_task();
 
 	sys_log.register_push_callback(print_callback);
-	// Anything USB related needs to be on the same core-- just use core 2
-	xTaskCreateAffinitySet(
-		usb_device_task,
-		"pcrb_usb",
-		configMINIMAL_STACK_SIZE*2,
-		nullptr,
-		tskIDLE_PRIORITY+1,
-		CPU1_MASK,
-		nullptr);
 
 	xTaskCreateAffinitySet(pcrb::cli_task, "pcrb_cli", 512, nullptr, tskIDLE_PRIORITY+1, CPUS_MASK, nullptr);
 	xTaskCreateAffinitySet(pcrb::wifi_management_task, "pcrb_wifi", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
