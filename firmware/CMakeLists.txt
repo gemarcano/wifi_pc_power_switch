@@ -11,9 +11,9 @@ project(pc_remote_button)
 
 pico_sdk_init()
 
-
 add_executable(pc_remote_button
 	src/main.cpp
+	src/mqtt.cpp
 	src/ntp.cpp
 	src/server.cpp
 	src/request_handler.cpp
@@ -27,6 +27,7 @@ add_executable(pc_remote_button
 
 target_link_libraries(pc_remote_button
 	pico_cyw43_arch_lwip_sys_freertos
+	pico_lwip_mqtt
 	pico_stdlib
 	FreeRTOS-Kernel-Heap4
 	gpico
