@@ -25,8 +25,10 @@
  */
 
 #include <tusb.h>
+#include <device/usbd_pvt.h>
 
 #include <pico/unique_id.h>
+#include <pico/bootrom.h>
 
 #include <FreeRTOS.h>
 #include <task.h>
@@ -50,6 +52,13 @@
 #define _PID_MAP(itf, n)  ( (CFG_TUD_##itf) << (n) )
 #define USB_PID           (0x4000 | _PID_MAP(CDC, 0) | _PID_MAP(MSC, 1) | _PID_MAP(HID, 2) | \
 		                       _PID_MAP(MIDI, 3) | _PID_MAP(VENDOR, 4) )
+
+static constexpr int RESET_INTERFACE_SUBCLASS = 0;
+static constexpr int RESET_INTERFACE_PROTOCOL = 1;
+
+#define TUD_RPI_RESET_DESCRIPTOR(_itfnum, _stridx) \
+  /* Interface */\
+  9, TUSB_DESC_INTERFACE, (_itfnum), 0, 0, TUSB_CLASS_VENDOR_SPECIFIC, RESET_INTERFACE_SUBCLASS, RESET_INTERFACE_PROTOCOL, (_stridx)
 
 //--------------------------------------------------------------------+
 // Device Descriptors
@@ -91,6 +100,7 @@ enum
 	ITF_NUM_CDC,
 	ITF_NUM_CDC_DATA,
 	ITF_NUM_MSC,
+	ITF_RESET,
 	ITF_NUM_TOTAL,
 };
 
@@ -100,8 +110,10 @@ const constexpr int EPNUM_CDC_IN    = 0x82;
 const constexpr int EPNUM_MSC_OUT   = 0x03;
 const constexpr int EPNUM_MSC_IN    = 0x83;
 
+static constexpr int TUD_RPI_RESET_DESC_LEN = 9;
+
 constexpr const auto desc_length =
-	TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_MSC_DESC_LEN;
+	TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_MSC_DESC_LEN + TUD_RPI_RESET_DESC_LEN;
 
 constexpr const auto desc_configuration = std::to_array<uint8_t>({
 	TUD_CONFIG_DESCRIPTOR(
@@ -130,6 +142,8 @@ constexpr const auto desc_configuration = std::to_array<uint8_t>({
 		EPNUM_MSC_IN,  // EP in
 		64             // EP size
 	),
+
+	TUD_RPI_RESET_DESCRIPTOR(ITF_RESET, 6),
 });
 
 // Invoked when received GET CONFIGURATION DESCRIPTOR
@@ -155,6 +169,7 @@ constexpr auto string_desc_arr = std::array
 	u"",                                   // 3: Serials, dynamically generated
 	u"CDC",                                // 4: CDC
 	u"MSC",                                // 5: MSC
+	u"Reset",                              // 6: Reset
 };
 
 template<typename T>
@@ -490,4 +505,84 @@ int32_t tud_msc_scsi_cb(uint8_t lun, const uint8_t scsi_cmd[16], void *buffer, u
 	}
 
 	return resplen;
+}
+
+constexpr unsigned PICO_STDIO_USB_RESET_MAGIC_BAUD_RATE = 1200;
+
+void tud_cdc_line_coding_cb(__unused uint8_t itf, cdc_line_coding_t const* p_line_coding) {
+	if (p_line_coding->bit_rate == PICO_STDIO_USB_RESET_MAGIC_BAUD_RATE) {
+		rom_reset_usb_boot_extra(-1, 0, false);
+	}
+}
+
+static unsigned reset_interface_number = 0;
+
+static void reset_init()
+{}
+
+static void reset_reset(uint8_t)
+{
+	reset_interface_number = 0;
+}
+
+static uint16_t reset_open(uint8_t, const tusb_desc_interface_t *itf_desc, uint16_t max_len)
+{
+	TU_VERIFY(TUSB_CLASS_VENDOR_SPECIFIC == itf_desc->bInterfaceClass &&
+		RESET_INTERFACE_SUBCLASS == itf_desc->bInterfaceSubClass &&
+		RESET_INTERFACE_PROTOCOL == itf_desc->bInterfaceProtocol, 0);
+
+	reset_interface_number = itf_desc->bInterfaceNumber;
+	constexpr const int drv_len = sizeof(tusb_desc_interface_t);
+	TU_VERIFY(max_len >= drv_len, 0);
+	return drv_len;
+}
+
+static bool reset_control_xfer_cb(uint8_t, uint8_t stage, const tusb_control_request_t *request)
+{
+	if (stage != CONTROL_STAGE_SETUP)
+		return true;
+
+	if (request->wIndex == reset_interface_number)
+	{
+		constexpr const int RESET_REQUEST_BOOTSEL = 1;
+		constexpr const int RESET_REQUEST_FLASH = 2;
+		if (request->bRequest == RESET_REQUEST_BOOTSEL)
+		{
+			// FIXME I should probably wind down FreeRTOS properly...
+			printf("Rebooting to BOOTSEL %i...\r\n", (request->wValue & 0x7f));
+			rom_reset_usb_boot_extra(-1, (request->wValue & 0x7f), false);
+			return true;
+		}
+		else if (request->bRequest == RESET_REQUEST_FLASH)
+		{
+			printf("Rebooting to application...\r\n");
+			TaskHandle_t handle = xTaskGetHandle("gpico_watchdog_cpu0");
+			vTaskDelete(handle);
+		}
+	}
+
+	return false;
+}
+
+static bool reset_xfer_cb(uint8_t, uint8_t, xfer_result_t, uint32_t)
+{
+	return true;
+}
+
+static const usbd_class_driver_t reset_driver =
+{
+	.name = nullptr,
+	.init = reset_init,
+	.deinit = nullptr,
+	.reset = reset_reset,
+	.open = reset_open,
+	.control_xfer_cb = reset_control_xfer_cb,
+	.xfer_cb = reset_xfer_cb,
+	.sof = nullptr,
+};
+
+const usbd_class_driver_t* usbd_app_driver_get_cb(uint8_t *driver_count)
+{
+	*driver_count = 1;
+	return &reset_driver;
 }
