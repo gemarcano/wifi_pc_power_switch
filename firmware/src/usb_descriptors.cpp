@@ -24,6 +24,8 @@
  *
  */
 
+#include <gpico/reset.h>
+
 #include <tusb.h>
 #include <device/usbd_pvt.h>
 
@@ -550,14 +552,13 @@ static bool reset_control_xfer_cb(uint8_t, uint8_t stage, const tusb_control_req
 		{
 			// FIXME I should probably wind down FreeRTOS properly...
 			printf("Rebooting to BOOTSEL %i...\r\n", (request->wValue & 0x7f));
-			rom_reset_usb_boot_extra(-1, (request->wValue & 0x7f), false);
+			gpico::bootsel_reset();
 			return true;
 		}
 		else if (request->bRequest == RESET_REQUEST_FLASH)
 		{
 			printf("Rebooting to application...\r\n");
-			TaskHandle_t handle = xTaskGetHandle("gpico_watchdog_cpu0");
-			vTaskDelete(handle);
+			gpico::flash_reset();
 		}
 	}
 

@@ -6,6 +6,7 @@
 #include <pcrb/switch_task.h>
 
 #include <gpico/log.h>
+#include <gpico/reset.h>
 
 #include <pico/unique_id.h>
 #include <pico/stdlib.h>
@@ -70,20 +71,14 @@ static void run(const char* line)
 	{
 		printf("Rebooting into programming mode...\r\n");
 		fflush(stdout);
-		vTaskSuspendAll();
-		taskENTER_CRITICAL();
-		reset_usb_boot(0,0);
-		taskEXIT_CRITICAL();
-		xTaskResumeAll();
+		gpico::bootsel_reset();
 	}
 
 	if (line[0] == 'k')
 	{
 		printf("Killing (hanging)...\r\n");
 		fflush(stdout);
-		TaskHandle_t handle = xTaskGetHandle("gpico_watchdog_cpu0");
-		vTaskDelete(handle);
-		for(;;);
+		gpico::flash_reset();
 	}
 }
 
