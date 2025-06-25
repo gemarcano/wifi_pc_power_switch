@@ -513,7 +513,7 @@ constexpr unsigned PICO_STDIO_USB_RESET_MAGIC_BAUD_RATE = 1200;
 
 void tud_cdc_line_coding_cb(__unused uint8_t itf, cdc_line_coding_t const* p_line_coding) {
 	if (p_line_coding->bit_rate == PICO_STDIO_USB_RESET_MAGIC_BAUD_RATE) {
-		rom_reset_usb_boot_extra(-1, 0, false);
+		gpico::bootsel_reset();
 	}
 }
 
@@ -550,7 +550,6 @@ static bool reset_control_xfer_cb(uint8_t, uint8_t stage, const tusb_control_req
 		constexpr const int RESET_REQUEST_FLASH = 2;
 		if (request->bRequest == RESET_REQUEST_BOOTSEL)
 		{
-			// FIXME I should probably wind down FreeRTOS properly...
 			printf("Rebooting to BOOTSEL %i...\r\n", (request->wValue & 0x7f));
 			gpico::bootsel_reset();
 			return true;
