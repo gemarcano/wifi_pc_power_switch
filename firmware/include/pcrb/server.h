@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <memory>
 #include <expected>
+#include <vector>
 
 // forward declaration of addrinfo, so we don't need to pull in the complete
 // networking headers
@@ -145,7 +146,7 @@ public:
 	/** FIXME this is super specialized
 	 *
 	 */
-	static std::expected<unsigned, int> handle_request(socket sock);
+	static std::expected<std::vector<std::byte>, int> handle_request(socket sock);
 
 	/** Closes and shuts down the server socket.
 	 */
@@ -155,6 +156,20 @@ private:
 	/// Socket used to listen
 	socket socket_ipv4;
 };
+
+template<class T>
+constexpr T ntoh(T data)
+{
+	return (std::endian::native == std::endian::little) ?
+		std::byteswap(data) : data;
+}
+
+template<class T>
+constexpr T hton(T data)
+{
+	return (std::endian::native == std::endian::little) ?
+		std::byteswap(data) : data;
+}
 
 }
 

@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <format>
+#include <cstring>
 
 using gpico::sys_log;
 
@@ -37,22 +38,30 @@ void network_task(void*)
 
 		for(;;)
 		{
-			auto result = server_.accept();
-			if (!result)
+			auto accept_result = server_.accept();
+			if (!accept_result)
 			{
-				sys_log.push(std::format("unable to accept socket, error {}", result.error()));
+				sys_log.push(std::format("unable to accept socket, error {}", accept_result.error()));
 				// FIXME what if the error is terminal? Are there any terminal errors?
 				continue;
 			}
 			sys_log.push("new connection accepted");
-			auto request_result = server_.handle_request(std::move(*result));
-			if (result)
+			auto request_result = server_.handle_request(std::move(*accept_result));
+			if (request_result)
 			{
-				sys_log.push(std::format("Received network request with value {}", request_result.value()));
-				xQueueSendToBack(switch_comms.get(), &request_result.value(), 0);
+				if (request_result.value().size() != 4)
+				{
+					sys_log.push(std::format("Received bad network request with size {}", request_result.value().size()));
+					continue;
+				}
+				uint32_t request;
+				memcpy(&request, request_result.value().data(), request_result.value().size());
+				request = ntoh(request);
+				sys_log.push(std::format("Received network request {}", request));
+				xQueueSendToBack(switch_comms.get(), &request, 0);
 			}
 			else
-				sys_log.push(std::format("failed to handle request: {}", result.error()));
+				sys_log.push(std::format("failed to handle request: {}", request_result.error()));
 		}
 
 		server_.close();
