@@ -14,6 +14,11 @@
 
 #include <string>
 #include <format>
+#include <vector>
+
+#include <errno.h>
+#undef errno
+extern int errno;
 
 using gpico::sys_log;
 
@@ -123,19 +128,27 @@ std::expected<socket, int> server::accept()
 	return socket(sock);
 }
 
-std::expected<unsigned, int> server::handle_request(socket sock)
+
+std::expected<std::vector<std::byte>, int> server::handle_request(socket sock)
 {
 	unsigned result = 0;
-	char buffer[16] = {};
-	ssize_t amount = recv(sock.get(), buffer, 4, 0);
-	if (amount != 4)
+	uint16_t size = 0;
+	ssize_t amount = recv(sock.get(), &size, 2, 0);
+	if (amount != 2)
 	{
 		return std::unexpected(static_cast<int>(result));
 	}
-	memcpy(&result, buffer, sizeof(result));
-	result = ntohl(result);
+	size = ntoh(size);
 
-	return result;
+	size = std::min<uint16_t>(size, 64);
+	std::vector<std::byte> buffer(size);
+	amount = recv(sock.get(), buffer.data(), size, 0);
+	if (amount != size)
+	{
+		return std::unexpected(static_cast<int>(-1));
+	}
+
+	return buffer;
 }
 
 void server::close()
