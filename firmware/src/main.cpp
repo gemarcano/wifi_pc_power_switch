@@ -10,6 +10,7 @@
 #include <pcrb/network_task.h>
 #include <pcrb/cli_task.h>
 #include <pcrb/wifi_management_task.h>
+#include <pcrb/monitor_task.h>
 // This secrets.h includes strings for WIFI_SSID and WIFI_PASSWORD
 #include "secrets.h"
 
@@ -76,6 +77,7 @@ void init_task(void*)
 
 	xTaskCreateAffinitySet(pcrb::switch_task, "pcrb_switch", 256, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
 	xTaskCreateAffinitySet(pcrb::network_task, "pcrb_network", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
+	xTaskCreateAffinitySet(pcrb::monitor_task, "pcrb_monitor", 256, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
 
 	vTaskDelete(nullptr);
 	for(;;);

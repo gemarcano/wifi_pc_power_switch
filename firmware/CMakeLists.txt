@@ -20,6 +20,7 @@ add_executable(pc_remote_button
 	src/network_task.cpp
 	src/cli_task.cpp
 	src/wifi_management_task.cpp
+	src/monitor_task.cpp
 	src/usb_descriptors.cpp
 )
 

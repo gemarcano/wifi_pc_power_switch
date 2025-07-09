@@ -7,7 +7,7 @@
 namespace pcrb
 {
 
-template<int GPIOn>
+template<unsigned GPIOn>
 pc_switch<GPIOn>::pc_switch(bool init_state)
 {
 	gpio_init(GPIOn);
@@ -16,19 +16,19 @@ pc_switch<GPIOn>::pc_switch(bool init_state)
 	gpio_set_dir(GPIOn, GPIO_OUT);
 }
 
-template<int GPIOn>
+template<unsigned GPIOn>
 void pc_switch<GPIOn>::set(bool state)
 {
 	gpio_put(GPIOn, state);
 }
 
-template<int GPIOn>
+template<unsigned GPIOn>
 bool pc_switch<GPIOn>::get() const
 {
 	return gpio_get(GPIOn);
 }
 
-template<int GPIOn>
+template<unsigned GPIOn>
 void pc_switch<GPIOn>::toggle()
 {
 	set(!get());

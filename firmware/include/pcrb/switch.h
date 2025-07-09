@@ -10,7 +10,7 @@
 namespace pcrb
 {
 
-template<int GPIOn>
+template<unsigned GPIOn>
 class pc_switch
 {
 public:
