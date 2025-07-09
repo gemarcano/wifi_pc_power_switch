@@ -11,7 +11,7 @@
 		(comment 1 "Author: ${AUTHOR}")
 	)
 	(lib_symbols
-		(symbol "Connector:Conn_01x04_Socket"
+		(symbol "Connector:Conn_01x02_Socket"
 			(pin_names
 				(offset 1.016)
 				(hide yes)
@@ -20,15 +20,15 @@
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "J"
-				(at 0 5.08 0)
+				(at 0 2.54 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
 				)
 			)
-			(property "Value" "Conn_01x04_Socket"
-				(at 0 -7.62 0)
+			(property "Value" "Conn_01x02_Socket"
+				(at 0 -5.08 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -53,7 +53,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Generic connector, single row, 01x04, script generated"
+			(property "Description" "Generic connector, single row, 01x02, script generated"
 				(at 0 0 0)
 				(effects
 					(font
@@ -88,19 +88,7 @@
 					(hide yes)
 				)
 			)
-			(symbol "Conn_01x04_Socket_1_1"
-				(polyline
-					(pts
-						(xy -1.27 2.54) (xy -0.508 2.54)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
+			(symbol "Conn_01x02_Socket_1_1"
 				(polyline
 					(pts
 						(xy -1.27 0) (xy -0.508 0)
@@ -117,30 +105,6 @@
 					(pts
 						(xy -1.27 -2.54) (xy -0.508 -2.54)
 					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.27 -5.08) (xy -0.508 -5.08)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(arc
-					(start 0 2.032)
-					(mid -0.5058 2.54)
-					(end 0 3.048)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -173,20 +137,8 @@
 						(type none)
 					)
 				)
-				(arc
-					(start 0 -5.588)
-					(mid -0.5058 -5.08)
-					(end 0 -4.572)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
 				(pin passive line
-					(at -5.08 2.54 0)
+					(at -5.08 0 0)
 					(length 3.81)
 					(name "Pin_1"
 						(effects
@@ -204,7 +156,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 0 0)
+					(at -5.08 -2.54 0)
 					(length 3.81)
 					(name "Pin_2"
 						(effects
@@ -214,42 +166,6 @@
 						)
 					)
 					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 -2.54 0)
-					(length 3.81)
-					(name "Pin_3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 -5.08 0)
-					(length 3.81)
-					(name "Pin_4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -306,6 +222,15 @@
 				)
 			)
 			(property "Description" "Light emitting diode"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Sim.Pins" "1=K 2=A"
 				(at 0 0 0)
 				(effects
 					(font
@@ -1948,7 +1873,7 @@
 				(offset 1.016)
 				(hide yes)
 			)
-			(exclude_from_sim yes)
+			(exclude_from_sim no)
 			(in_bom no)
 			(on_board yes)
 			(property "Reference" "H"
@@ -3133,6 +3058,16 @@
 			(embedded_fonts no)
 		)
 	)
+	(text "Resistor needs to be\nsmaller than 8k, to\nfight Errata 9."
+		(exclude_from_sim no)
+		(at 176.276 121.666 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "19363d28-4a38-4b40-bd02-a9d5cec3dfa3")
+	)
 	(junction
 		(at 82.55 95.25)
 		(diameter 0)
@@ -3152,28 +3087,10 @@
 		(uuid "2b3ccd9b-6187-4fed-a65e-7ee0e4c30389")
 	)
 	(junction
-		(at 195.58 91.44)
+		(at 177.8 104.14)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "38381e36-e9e5-419f-82df-f1a819871fff")
-	)
-	(junction
-		(at 195.58 82.55)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "3e0cbaaa-6eb1-4149-a976-f1340ba1b9ce")
-	)
-	(junction
-		(at 195.58 96.52)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "90abc01f-2406-4fb6-830a-dd5c1c3cb3af")
-	)
-	(junction
-		(at 195.58 77.47)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "99a94f51-9772-41b0-a16e-a92128f8e750")
+		(uuid "375e83f0-3e28-4edd-892c-250e7faf2fba")
 	)
 	(junction
 		(at 34.29 177.8)
@@ -3188,34 +3105,16 @@
 		(uuid "a3a47bbf-463d-49cc-ab79-9dd4030bbff1")
 	)
 	(junction
-		(at 48.26 76.2)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "a6c282c9-2a1d-4473-8601-d034b794c006")
-	)
-	(junction
-		(at 48.26 93.98)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "a75e08a7-7507-4cc0-8d06-1d4c1cb6618d")
-	)
-	(junction
 		(at 48.26 73.66)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "a82055cd-dd60-4fa1-9491-aada4bb15589")
 	)
 	(junction
-		(at 48.26 99.06)
+		(at 177.8 100.33)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "b0e10263-423e-4a15-abf6-0189e08ccc13")
-	)
-	(junction
-		(at 48.26 71.12)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "cff7ae49-868e-4668-8b11-2e3970c261e1")
+		(uuid "acd9492d-c6f1-4a1e-988f-88feadbc355b")
 	)
 	(junction
 		(at 201.93 118.11)
@@ -3228,10 +3127,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "eaa0c649-6a17-4454-8f47-7195e4ae9111")
-	)
-	(no_connect
-		(at 157.48 104.14)
-		(uuid "004762b6-e3f0-4d19-9731-0455b141630c")
 	)
 	(no_connect
 		(at 111.76 96.52)
@@ -3381,7 +3276,7 @@
 	)
 	(wire
 		(pts
-			(xy 177.8 77.47) (xy 186.69 77.47)
+			(xy 177.8 77.47) (xy 184.15 77.47)
 		)
 		(stroke
 			(width 0)
@@ -3418,6 +3313,16 @@
 			(type default)
 		)
 		(uuid "12a97fca-4140-4a15-8cfa-70efb2457f79")
+	)
+	(wire
+		(pts
+			(xy 177.8 100.33) (xy 177.8 104.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "17f58953-2a08-4e2b-b0ef-006e34a51396")
 	)
 	(wire
 		(pts
@@ -3461,16 +3366,6 @@
 	)
 	(wire
 		(pts
-			(xy 195.58 77.47) (xy 194.31 77.47)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2e9fe8de-3fa5-4ffc-96dc-14b2b5e7d414")
-	)
-	(wire
-		(pts
 			(xy 67.31 67.31) (xy 63.5 67.31)
 		)
 		(stroke
@@ -3498,16 +3393,6 @@
 			(type default)
 		)
 		(uuid "4e2e7307-a42b-44f0-980d-dd02455ccbf7")
-	)
-	(wire
-		(pts
-			(xy 195.58 93.98) (xy 195.58 96.52)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "554bfcff-4506-4167-90fb-ce435f3a86eb")
 	)
 	(wire
 		(pts
@@ -3541,6 +3426,16 @@
 	)
 	(wire
 		(pts
+			(xy 177.8 97.79) (xy 177.8 100.33)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "712664cf-2d4b-44c5-9e8a-e0704f03762a")
+	)
+	(wire
+		(pts
 			(xy 71.12 95.25) (xy 72.39 95.25)
 		)
 		(stroke
@@ -3551,17 +3446,17 @@
 	)
 	(wire
 		(pts
-			(xy 195.58 82.55) (xy 195.58 85.09)
+			(xy 157.48 104.14) (xy 177.8 104.14)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "799b5721-f7cb-4970-91f2-43375d2d023c")
+		(uuid "7f46502d-2f30-419f-8029-5d4dbeb11e7c")
 	)
 	(wire
 		(pts
-			(xy 48.26 73.66) (xy 48.26 76.2)
+			(xy 48.26 73.66) (xy 48.26 82.55)
 		)
 		(stroke
 			(width 0)
@@ -3581,17 +3476,7 @@
 	)
 	(wire
 		(pts
-			(xy 48.26 99.06) (xy 48.26 101.6)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8a108dde-ccd8-4701-a704-bda9f25dafb4")
-	)
-	(wire
-		(pts
-			(xy 195.58 96.52) (xy 195.58 99.06)
+			(xy 195.58 93.98) (xy 195.58 99.06)
 		)
 		(stroke
 			(width 0)
@@ -3601,43 +3486,23 @@
 	)
 	(wire
 		(pts
-			(xy 48.26 76.2) (xy 48.26 82.55)
+			(xy 191.77 77.47) (xy 195.58 77.47)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "8d3f3805-6235-426c-a8b4-b33b347dd2f6")
+		(uuid "94222326-c217-46dd-8f90-cf9b87812e52")
 	)
 	(wire
 		(pts
-			(xy 195.58 88.9) (xy 195.58 91.44)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "982548df-d18e-4ba8-8abd-a474929f9f75")
-	)
-	(wire
-		(pts
-			(xy 194.31 62.23) (xy 195.58 62.23)
+			(xy 191.77 62.23) (xy 193.04 62.23)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "a50698ef-c3d3-4bad-ac7a-9a5fa6d1d797")
-	)
-	(wire
-		(pts
-			(xy 48.26 93.98) (xy 48.26 96.52)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b09e26a8-2153-4da5-b4e2-e8624b123c4c")
 	)
 	(wire
 		(pts
@@ -3661,7 +3526,7 @@
 	)
 	(wire
 		(pts
-			(xy 186.69 62.23) (xy 184.15 62.23)
+			(xy 184.15 62.23) (xy 181.61 62.23)
 		)
 		(stroke
 			(width 0)
@@ -3671,7 +3536,7 @@
 	)
 	(wire
 		(pts
-			(xy 203.2 62.23) (xy 208.28 62.23)
+			(xy 200.66 62.23) (xy 205.74 62.23)
 		)
 		(stroke
 			(width 0)
@@ -3711,7 +3576,7 @@
 	)
 	(wire
 		(pts
-			(xy 184.15 62.23) (xy 184.15 64.77)
+			(xy 181.61 62.23) (xy 181.61 64.77)
 		)
 		(stroke
 			(width 0)
@@ -3771,23 +3636,13 @@
 	)
 	(wire
 		(pts
-			(xy 48.26 87.63) (xy 48.26 93.98)
+			(xy 48.26 87.63) (xy 48.26 96.52)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "faeba024-be4f-4eb3-bae5-f9793c50d304")
-	)
-	(wire
-		(pts
-			(xy 48.26 68.58) (xy 48.26 71.12)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "fee1cee7-0e01-4566-8ad8-c6f103c5587d")
 	)
 	(label "V_{3.3}"
 		(at 195.58 110.49 0)
@@ -3808,6 +3663,16 @@
 			(justify right bottom)
 		)
 		(uuid "0a48bec0-8bb1-49d1-a86a-cd9b92708789")
+	)
+	(label "V_{in}"
+		(at 191.77 77.47 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "13e3839a-421a-4df0-92db-69806c88c31c")
 	)
 	(label "EN"
 		(at 161.29 106.68 0)
@@ -3849,6 +3714,16 @@
 		)
 		(uuid "5b8e5585-6e99-4ae1-a2f2-c546359acf45")
 	)
+	(label "ON"
+		(at 161.29 104.14 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "780d746a-4d40-4450-9513-50e620910a1d")
+	)
 	(label "RUN"
 		(at 195.58 118.11 0)
 		(effects
@@ -3880,7 +3755,7 @@
 		(uuid "b98191dc-8c3b-44da-a93f-022cc8c6fe0b")
 	)
 	(label "V_{SYS}"
-		(at 208.28 62.23 180)
+		(at 205.74 62.23 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3888,6 +3763,102 @@
 			(justify right bottom)
 		)
 		(uuid "fb6e4752-692a-4da5-862e-253c414d2313")
+	)
+	(symbol
+		(lib_id "Connector:Conn_01x02_Socket")
+		(at 182.88 97.79 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "0bc8c619-d203-49ba-b508-8665c1776e0f")
+		(property "Reference" "J5"
+			(at 184.15 97.7899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "ON"
+			(at 184.15 100.3299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x02_P2.54mm_Vertical"
+			(at 182.88 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 182.88 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated"
+			(at 182.88 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Product Number" ""
+			(at 182.88 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Digikey Product Number" ""
+			(at 182.88 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Product Number" ""
+			(at 182.88 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "456240c0-6ecd-4676-8667-b9ee38f55f92")
+		)
+		(pin "2"
+			(uuid "93ae3f49-ee7d-4f50-ada4-03848f2310fb")
+		)
+		(instances
+			(project "wifi_pc_power_switch"
+				(path "/0ea637e9-b2c0-4dfc-b68d-b76c0fa2d617"
+					(reference "J5")
+					(unit 1)
+				)
+			)
+		)
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -3956,7 +3927,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector:Conn_01x04_Socket")
+		(lib_id "Connector:Conn_01x02_Socket")
 		(at 200.66 91.44 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -3965,8 +3936,8 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "17ee38b7-f8b2-4ca9-9d9f-900794bfc95b")
-		(property "Reference" "J1"
-			(at 201.93 91.44 0)
+		(property "Reference" "J2"
+			(at 201.93 91.4399 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3974,8 +3945,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "Conn_01x04_Socket"
-			(at 201.93 93.98 0)
+		(property "Value" "GND"
+			(at 201.93 93.9799 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3983,7 +3954,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical"
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x02_P2.54mm_Vertical"
 			(at 200.66 91.44 0)
 			(effects
 				(font
@@ -4001,7 +3972,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Generic connector, single row, 01x04, script generated"
+		(property "Description" "Generic connector, single row, 01x02, script generated"
 			(at 200.66 91.44 0)
 			(effects
 				(font
@@ -4042,16 +4013,10 @@
 		(pin "2"
 			(uuid "ce91cd86-fe03-45c0-a08f-be12b8c1bffe")
 		)
-		(pin "3"
-			(uuid "55e4e2c4-80c3-45c9-87c8-6dcbf1a79e83")
-		)
-		(pin "4"
-			(uuid "ca08db12-e205-449e-82ca-c2485bd834ef")
-		)
 		(instances
 			(project "wifi_pc_power_switch"
 				(path "/0ea637e9-b2c0-4dfc-b68d-b76c0fa2d617"
-					(reference "J1")
+					(reference "J2")
 					(unit 1)
 				)
 			)
@@ -4059,7 +4024,7 @@
 	)
 	(symbol
 		(lib_id "Device:LED")
-		(at 190.5 62.23 0)
+		(at 187.96 62.23 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4067,8 +4032,8 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1c450a34-7044-4581-891c-ca9f705b2f81")
-		(property "Reference" "D1"
-			(at 188.9125 55.88 0)
+		(property "Reference" "D2"
+			(at 186.3725 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4076,7 +4041,7 @@
 			)
 		)
 		(property "Value" "LED"
-			(at 188.9125 58.42 0)
+			(at 186.3725 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4084,7 +4049,7 @@
 			)
 		)
 		(property "Footprint" "LED_SMD:LED_0603_1608Metric_Pad1.05x0.95mm_HandSolder"
-			(at 190.5 62.23 0)
+			(at 187.96 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4093,7 +4058,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 190.5 62.23 0)
+			(at 187.96 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4102,7 +4067,16 @@
 			)
 		)
 		(property "Description" "Light emitting diode"
-			(at 190.5 62.23 0)
+			(at 187.96 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" "1=K 2=A"
+			(at 187.96 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4119,7 +4093,7 @@
 		(instances
 			(project ""
 				(path "/0ea637e9-b2c0-4dfc-b68d-b76c0fa2d617"
-					(reference "D1")
+					(reference "D2")
 					(unit 1)
 				)
 			)
@@ -4258,7 +4232,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector:Conn_01x04_Socket")
+		(lib_id "Connector:Conn_01x02_Socket")
 		(at 43.18 73.66 180)
 		(unit 1)
 		(exclude_from_sim no)
@@ -4267,15 +4241,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2ba3b898-87ff-4f7c-b59a-2ea7bd20ffed")
-		(property "Reference" "J4"
-			(at 43.815 63.5 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Conn_01x04_Socket"
+		(property "Reference" "J3"
 			(at 43.815 66.04 0)
 			(effects
 				(font
@@ -4283,7 +4249,15 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical"
+		(property "Value" "IN"
+			(at 43.815 68.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x02_P2.54mm_Vertical"
 			(at 43.18 73.66 0)
 			(effects
 				(font
@@ -4301,7 +4275,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Generic connector, single row, 01x04, script generated"
+		(property "Description" "Generic connector, single row, 01x02, script generated"
 			(at 43.18 73.66 0)
 			(effects
 				(font
@@ -4342,16 +4316,10 @@
 		(pin "2"
 			(uuid "e47a0e50-cc95-4a9d-b796-571dcf64fa96")
 		)
-		(pin "3"
-			(uuid "b83a40ea-b8f3-4656-be1a-b04f19cb7017")
-		)
-		(pin "4"
-			(uuid "3ca88429-e4b5-419b-8cb1-24ee42bcff8d")
-		)
 		(instances
 			(project "wifi_pc_power_switch"
 				(path "/0ea637e9-b2c0-4dfc-b68d-b76c0fa2d617"
-					(reference "J4")
+					(reference "J3")
 					(unit 1)
 				)
 			)
@@ -4427,7 +4395,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_US")
-		(at 199.39 62.23 270)
+		(at 196.85 62.23 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4435,7 +4403,7 @@
 		(dnp no)
 		(uuid "48a9b79c-dcda-4ad7-a0fc-1e8039a8e914")
 		(property "Reference" "R1"
-			(at 198.12 58.42 0)
+			(at 195.58 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4443,7 +4411,7 @@
 			)
 		)
 		(property "Value" "360"
-			(at 200.66 58.42 0)
+			(at 198.12 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4451,7 +4419,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
-			(at 199.136 63.246 90)
+			(at 196.596 63.246 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4460,7 +4428,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 199.39 62.23 0)
+			(at 196.85 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4469,7 +4437,7 @@
 			)
 		)
 		(property "Description" "Resistor, US symbol"
-			(at 199.39 62.23 0)
+			(at 196.85 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4478,7 +4446,7 @@
 			)
 		)
 		(property "Manufacturer Product Number" ""
-			(at 199.39 62.23 0)
+			(at 196.85 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4486,7 +4454,7 @@
 			)
 		)
 		(property "Digikey Product Number" ""
-			(at 199.39 62.23 0)
+			(at 196.85 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4495,7 +4463,7 @@
 			)
 		)
 		(property "Mouser Product Number" ""
-			(at 199.39 62.23 0)
+			(at 196.85 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4613,7 +4581,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 184.15 64.77 0)
+		(at 181.61 64.77 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4622,7 +4590,7 @@
 		(fields_autoplaced yes)
 		(uuid "695c6ff0-8c3a-4d06-be54-607cdfbfe6ae")
 		(property "Reference" "#PWR014"
-			(at 184.15 71.12 0)
+			(at 181.61 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4631,7 +4599,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 184.15 69.85 0)
+			(at 181.61 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4639,7 +4607,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 184.15 64.77 0)
+			(at 181.61 64.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4648,7 +4616,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 184.15 64.77 0)
+			(at 181.61 64.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4657,7 +4625,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 184.15 64.77 0)
+			(at 181.61 64.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4687,7 +4655,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6bb97bdf-00ee-4311-b2f3-000fc5e1167d")
-		(property "Reference" "H3"
+		(property "Reference" "H2"
 			(at 25.4 182.88 0)
 			(effects
 				(font
@@ -4764,14 +4732,14 @@
 		(instances
 			(project "wifi_pc_power_switch"
 				(path "/0ea637e9-b2c0-4dfc-b68d-b76c0fa2d617"
-					(reference "H3")
+					(reference "H2")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(symbol
-		(lib_id "Connector:Conn_01x04_Socket")
+		(lib_id "Connector:Conn_01x02_Socket")
 		(at 200.66 80.01 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -4780,8 +4748,8 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6de6ee5b-5599-42d2-8b58-82149101e028")
-		(property "Reference" "J2"
-			(at 201.93 80.01 0)
+		(property "Reference" "J1"
+			(at 201.93 80.0099 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4789,8 +4757,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "Conn_01x04_Socket"
-			(at 201.93 82.55 0)
+		(property "Value" "V_{in}"
+			(at 201.93 82.5499 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4798,7 +4766,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical"
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x02_P2.54mm_Vertical"
 			(at 200.66 80.01 0)
 			(effects
 				(font
@@ -4816,7 +4784,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Generic connector, single row, 01x04, script generated"
+		(property "Description" "Generic connector, single row, 01x02, script generated"
 			(at 200.66 80.01 0)
 			(effects
 				(font
@@ -4857,16 +4825,10 @@
 		(pin "2"
 			(uuid "c542acd9-f82c-4427-b9ec-72ca3adceffe")
 		)
-		(pin "3"
-			(uuid "9c2133ff-b39a-498d-9bfa-fd1d54d07f36")
-		)
-		(pin "4"
-			(uuid "f0f1607e-1001-44c0-b05f-059934d5fd73")
-		)
 		(instances
 			(project "wifi_pc_power_switch"
 				(path "/0ea637e9-b2c0-4dfc-b68d-b76c0fa2d617"
-					(reference "J2")
+					(reference "J1")
 					(unit 1)
 				)
 			)
@@ -5033,7 +4995,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "RaspberryPi_Pico_W"
+		(property "Value" "RaspberryPi_Pico_2_W"
 			(at 136.7633 140.97 0)
 			(effects
 				(font
@@ -5051,7 +5013,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://datasheets.raspberrypi.com/picow/pico-w-datasheet.pdf"
+		(property "Datasheet" "https://datasheets.raspberrypi.com/picow/pico-2-w-datasheet.pdf"
 			(at 134.62 153.67 0)
 			(effects
 				(font
@@ -5069,7 +5031,7 @@
 				(hide yes)
 			)
 		)
-		(property "Digikey Product Number" ""
+		(property "Digikey Product Number" "2648-SC1633CT-ND"
 			(at 134.62 104.14 0)
 			(effects
 				(font
@@ -5078,7 +5040,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Product Number" ""
+		(property "Manufacturer Product Number" "SC1633"
 			(at 134.62 104.14 0)
 			(effects
 				(font
@@ -5252,7 +5214,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7e8dce1b-7606-4071-91cc-91114a55c913")
-		(property "Reference" "R4"
+		(property "Reference" "R2"
 			(at 67.31 72.39 0)
 			(effects
 				(font
@@ -5330,7 +5292,7 @@
 		(instances
 			(project "wifi_pc_power_switch"
 				(path "/0ea637e9-b2c0-4dfc-b68d-b76c0fa2d617"
-					(reference "R4")
+					(reference "R2")
 					(unit 1)
 				)
 			)
@@ -5422,7 +5384,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8fa655fa-0296-4893-a24c-431c21abea4f")
-		(property "Reference" "H2"
+		(property "Reference" "H3"
 			(at 48.26 172.72 0)
 			(effects
 				(font
@@ -5499,14 +5461,14 @@
 		(instances
 			(project "wifi_pc_power_switch"
 				(path "/0ea637e9-b2c0-4dfc-b68d-b76c0fa2d617"
-					(reference "H2")
+					(reference "H3")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(symbol
-		(lib_id "Connector:Conn_01x04_Socket")
+		(lib_id "Connector:Conn_01x02_Socket")
 		(at 43.18 99.06 180)
 		(unit 1)
 		(exclude_from_sim no)
@@ -5514,7 +5476,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "90585c8c-a5a6-461f-a332-9bd0deaa4c00")
-		(property "Reference" "J3"
+		(property "Reference" "J4"
 			(at 43.18 91.44 0)
 			(effects
 				(font
@@ -5522,7 +5484,7 @@
 				)
 			)
 		)
-		(property "Value" "Conn_01x04_Socket"
+		(property "Value" "OUT"
 			(at 43.18 104.14 0)
 			(effects
 				(font
@@ -5530,7 +5492,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical"
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x02_P2.54mm_Vertical"
 			(at 43.18 99.06 0)
 			(effects
 				(font
@@ -5548,7 +5510,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Generic connector, single row, 01x04, script generated"
+		(property "Description" "Generic connector, single row, 01x02, script generated"
 			(at 43.18 99.06 0)
 			(effects
 				(font
@@ -5589,16 +5551,10 @@
 		(pin "2"
 			(uuid "70fe52d2-b195-4229-8f94-cd72131869bc")
 		)
-		(pin "3"
-			(uuid "1f0ad171-6535-488c-a113-30502b57f437")
-		)
-		(pin "4"
-			(uuid "08e13934-24a8-49ee-b0f6-9481e3f308b2")
-		)
 		(instances
 			(project "wifi_pc_power_switch"
 				(path "/0ea637e9-b2c0-4dfc-b68d-b76c0fa2d617"
-					(reference "J3")
+					(reference "J4")
 					(unit 1)
 				)
 			)
@@ -5606,7 +5562,7 @@
 	)
 	(symbol
 		(lib_id "Diode:PMEG2010ER")
-		(at 190.5 77.47 0)
+		(at 187.96 77.47 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5614,8 +5570,8 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9d224b42-7793-4556-b7fb-743a23aba81c")
-		(property "Reference" "D2"
-			(at 190.1825 71.12 0)
+		(property "Reference" "D1"
+			(at 187.6425 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5623,7 +5579,7 @@
 			)
 		)
 		(property "Value" "PMEG2010ER"
-			(at 190.1825 73.66 0)
+			(at 187.6425 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5631,7 +5587,7 @@
 			)
 		)
 		(property "Footprint" "Diode_SMD:Nexperia_CFP3_SOD-123W"
-			(at 190.5 81.915 0)
+			(at 187.96 81.915 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5640,7 +5596,7 @@
 			)
 		)
 		(property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/PMEG2010ER.pdf"
-			(at 190.5 77.47 0)
+			(at 187.96 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5649,7 +5605,7 @@
 			)
 		)
 		(property "Description" "20V, 1A low Vf MEGA Schottky barrier rectifier, SOD-123W"
-			(at 190.5 77.47 0)
+			(at 187.96 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5666,7 +5622,7 @@
 		(instances
 			(project "wifi_pc_power_switch"
 				(path "/0ea637e9-b2c0-4dfc-b68d-b76c0fa2d617"
-					(reference "D2")
+					(reference "D1")
 					(unit 1)
 				)
 			)
@@ -5681,7 +5637,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "aa66c776-7d37-4e42-b72e-8de55c33b958")
-		(property "Reference" "R2"
+		(property "Reference" "R5"
 			(at 86.36 97.79 0)
 			(effects
 				(font
@@ -5759,7 +5715,7 @@
 		(instances
 			(project "wifi_pc_power_switch"
 				(path "/0ea637e9-b2c0-4dfc-b68d-b76c0fa2d617"
-					(reference "R2")
+					(reference "R5")
 					(unit 1)
 				)
 			)
@@ -5844,7 +5800,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b7613a5e-b524-4322-9699-1e30ad911bc8")
-		(property "Reference" "R5"
+		(property "Reference" "R4"
 			(at 76.2 88.9 90)
 			(effects
 				(font
@@ -5922,7 +5878,95 @@
 		(instances
 			(project "wifi_pc_power_switch"
 				(path "/0ea637e9-b2c0-4dfc-b68d-b76c0fa2d617"
-					(reference "R5")
+					(reference "R4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_US")
+		(at 177.8 107.95 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "c8a143cb-0ed6-4e63-96a3-1bf4f6275444")
+		(property "Reference" "R6"
+			(at 180.34 106.6799 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "5.11k"
+			(at 180.34 109.2199 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder"
+			(at 178.816 108.204 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 177.8 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor, US symbol"
+			(at 177.8 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Product Number" ""
+			(at 177.8 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Digikey Product Number" ""
+			(at 177.8 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "c9378a37-5d43-45df-b1fc-c7ab4f20c85c")
+		)
+		(pin "1"
+			(uuid "76746438-2958-41bb-87a7-321b9f8daa3e")
+		)
+		(instances
+			(project ""
+				(path "/0ea637e9-b2c0-4dfc-b68d-b76c0fa2d617"
+					(reference "R6")
 					(unit 1)
 				)
 			)
@@ -6214,6 +6258,72 @@
 			(project "wifi_pc_power_switch"
 				(path "/0ea637e9-b2c0-4dfc-b68d-b76c0fa2d617"
 					(reference "#PWR013")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 177.8 111.76 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "fbd3522b-cbd1-487d-9c52-3d1e8120e442")
+		(property "Reference" "#PWR01"
+			(at 177.8 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 177.8 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 177.8 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 177.8 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 177.8 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "e1727338-4af3-42bf-9efc-bd5dc55007d6")
+		)
+		(instances
+			(project "wifi_pc_power_switch"
+				(path "/0ea637e9-b2c0-4dfc-b68d-b76c0fa2d617"
+					(reference "#PWR01")
 					(unit 1)
 				)
 			)
