@@ -80,8 +80,6 @@ void addrinfo_deleter::operator()(addrinfo *info)
 
 int server::listen(uint16_t port)
 {
-	// Look up IP address of NTP server first, in case we're looking at an
-	// NTP pool
 	const addrinfo hints = {
 		.ai_flags = 0,
 		.ai_family = AF_UNSPEC,
@@ -98,7 +96,7 @@ int server::listen(uint16_t port)
 	if (err == -1)
 		return errno;
 	result.reset(result_);
-	result_ = NULL;
+	result_ = nullptr;
 
 	socket sock{::socket(result->ai_family, result->ai_socktype, result->ai_protocol)};
 	if (sock.get() == -1)
@@ -140,13 +138,19 @@ std::expected<std::vector<std::byte>, int> server::handle_request(socket sock)
 	}
 	size = ntoh(size);
 
-	size = std::min<uint16_t>(size, 64);
+	constexpr const uint16_t MAX_SIZE = 1024;
+	size = std::min<uint16_t>(size, MAX_SIZE);
 	std::vector<std::byte> buffer(size);
-	amount = recv(sock.get(), buffer.data(), size, 0);
-	if (amount != size)
+	ssize_t received = 0;
+	do
 	{
-		return std::unexpected(static_cast<int>(-1));
-	}
+		amount = recv(sock.get(), buffer.data() + received, size - received, 0);
+		if (amount == -1)
+		{
+			return std::unexpected(errno);
+		}
+		received += amount;
+	} while (received < size);
 
 	return buffer;
 }
