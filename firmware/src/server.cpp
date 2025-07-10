@@ -15,6 +15,7 @@
 #include <string>
 #include <format>
 #include <vector>
+#include <span>
 
 #include <errno.h>
 #undef errno
@@ -37,7 +38,6 @@ socket::~socket()
 {
 	if (socket_ != -1)
 	{
-		sys_log.push(std::format("closing socket {}", socket_));
 		shutdown();
 		close();
 	}
@@ -57,7 +57,6 @@ void socket::close()
 socket::socket(socket&& sock)
 :socket_(-1)
 {
-	sys_log.push(std::format("swap socket {} {}", sock.socket_, socket_));
 	std::swap(socket_, sock.socket_);
 }
 
@@ -127,32 +126,31 @@ std::expected<socket, int> server::accept()
 }
 
 
-std::expected<std::vector<std::byte>, int> server::handle_request(socket sock)
+std::expected<std::size_t, int> server::handle_request(socket sock, std::span<std::byte> data)
 {
-	unsigned result = 0;
 	uint16_t size = 0;
-	ssize_t amount = recv(sock.get(), &size, 2, 0);
-	if (amount != 2)
+	for (ssize_t amount = 0, received = 0; received < 2; received += amount)
 	{
-		return std::unexpected(static_cast<int>(result));
-	}
-	size = ntoh(size);
-
-	constexpr const uint16_t MAX_SIZE = 1024;
-	size = std::min<uint16_t>(size, MAX_SIZE);
-	std::vector<std::byte> buffer(size);
-	ssize_t received = 0;
-	do
-	{
-		amount = recv(sock.get(), buffer.data() + received, size - received, 0);
+		amount = recv(sock.get(), reinterpret_cast<std::byte*>(&size) + received, 2 - received, 0);
 		if (amount == -1)
 		{
 			return std::unexpected(errno);
 		}
-		received += amount;
-	} while (received < size);
+	}
 
-	return buffer;
+	size = ntoh(size);
+	size = std::min<uint16_t>(size, data.size());
+
+	for (size_t amount = 0, received = 0; received < size; received += amount)
+	{
+		amount = recv(sock.get(), data.data() + received, size - received, 0);
+		if (amount == -1)
+		{
+			return std::unexpected(errno);
+		}
+	}
+
+	return size;
 }
 
 void server::close()

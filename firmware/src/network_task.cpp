@@ -46,22 +46,25 @@ void network_task(void*)
 				continue;
 			}
 			sys_log.push("new connection accepted");
-			auto request_result = server_.handle_request(std::move(*accept_result));
+			std::array<std::byte, 1024> data;
+			auto request_result = server_.handle_request(std::move(*accept_result), std::span(data));
 			if (request_result)
 			{
-				if (request_result.value().size() != 4)
+				if (request_result.value() != 4)
 				{
-					sys_log.push(std::format("Received bad network request with size {}", request_result.value().size()));
+					sys_log.push(std::format("Received bad network request with size {}", request_result.value()));
 					continue;
 				}
 				uint32_t request;
-				memcpy(&request, request_result.value().data(), request_result.value().size());
+				memcpy(&request, data.data(), request_result.value());
 				request = ntoh(request);
 				sys_log.push(std::format("Received network request {}", request));
 				xQueueSendToBack(switch_comms.get(), &request, 0);
 			}
 			else
+			{
 				sys_log.push(std::format("failed to handle request: {}", request_result.error()));
+			}
 		}
 
 		server_.close();

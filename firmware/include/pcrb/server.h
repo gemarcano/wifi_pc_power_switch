@@ -9,6 +9,7 @@
 #include <memory>
 #include <expected>
 #include <vector>
+#include <span>
 
 // forward declaration of addrinfo, so we don't need to pull in the complete
 // networking headers
@@ -146,7 +147,7 @@ public:
 	/** FIXME this is super specialized
 	 *
 	 */
-	static std::expected<std::vector<std::byte>, int> handle_request(socket sock);
+	static std::expected<std::size_t, int> handle_request(socket sock, std::span<std::byte> data);
 
 	/** Closes and shuts down the server socket.
 	 */
