@@ -129,6 +129,11 @@ std::expected<socket, int> server::accept()
 std::expected<std::size_t, int> server::handle_request(socket sock, std::span<std::byte> data)
 {
 	uint16_t size = 0;
+	timeval read_timeout = {
+		.tv_sec = 1,
+		.tv_usec = 0
+	};
+	setsockopt(sock.get(), SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
 	for (ssize_t amount = 0, received = 0; received < 2; received += amount)
 	{
 		amount = recv(sock.get(), reinterpret_cast<std::byte*>(&size) + received, 2 - received, 0);

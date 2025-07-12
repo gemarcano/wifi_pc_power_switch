@@ -51,13 +51,22 @@ void network_task(void*)
 			if (request_result)
 			{
 				size_t amount = request_result.value();
-				if (amount != 4)
+				if (amount != 8)
 				{
 					sys_log.push(std::format("Received bad network request with size {}", amount));
 					continue;
 				}
+				uint32_t magic;
+				memcpy(&magic, data.data(), 4);
+				magic = ntoh(magic);
+				if (magic != 0x416E614D)
+				{
+					sys_log.push(std::format("Received bad network request, bad magic {}", magic));
+					continue;
+				}
+
 				uint32_t request;
-				memcpy(&request, data.data(), amount);
+				memcpy(&request, data.data() + 4, 4);
 				request = ntoh(request);
 				sys_log.push(std::format("Received network request {}", request));
 				xQueueSendToBack(switch_comms.get(), &request, 0);
