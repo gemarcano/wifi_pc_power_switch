@@ -17,69 +17,81 @@
 #include <cstdio>
 #include <algorithm>
 #include <limits>
+#include <span>
+#include <charconv>
 
 using gpico::sys_log;
 
-static void run(const char* line)
+static void command(std::string_view input, std::span<char> output)
 {
-	if (line[0] == 't')
+	if (input.starts_with("toggle"))
 	{
-		unsigned long ms = strtoul(line + 1, nullptr, 0);
-		printf("Toggling switch for %lu milliseconds\r\n", ms);
-		unsigned data = std::clamp<unsigned>(ms, 0, std::numeric_limits<unsigned>::max());
-		xQueueSendToBack(pcrb::switch_comms.get(), &data, 0);
+		unsigned long ms = 0;
+		std::from_chars(input.substr(7).data(), input.substr(7).data() + input.substr(7).size(), ms);
+		if (ms != 0)
+		{
+			snprintf(output.data(), output.size(), "Toggling switch for %lu milliseconds\r\n", ms);
+			unsigned data = std::clamp<unsigned>(ms, 0, std::numeric_limits<unsigned>::max());
+			xQueueSendToBack(pcrb::switch_comms.get(), &data, 0);
+		}
 	}
 
-	if (line[0] == 's')
+	if (input == "status")
 	{
-		printf("IP Address: %s\r\n", ip4addr_ntoa(netif_ip4_addr(netif_list)));
-		printf("default instance: 0x%p\r\n", netif_default);
-		printf("NETIF is up? %s\r\n", netif_is_up(netif_default) ? "yes" : "no");
-		printf("NETIF flags: 0x%02X\r\n", netif_default->flags);
-		printf("Wifi state: %d\r\n", cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA));
+		size_t amount = 0;
+		amount += snprintf(output.data() + amount, output.size() - amount, "IP Address: %s\r\n", ip4addr_ntoa(netif_ip4_addr(netif_list)));
+		amount += snprintf(output.data() + amount, output.size() - amount, "default instance: 0x%p\r\n", netif_default);
+		amount += snprintf(output.data() + amount, output.size() - amount, "NETIF is up? %s\r\n", netif_is_up(netif_default) ? "yes" : "no");
+		amount += snprintf(output.data() + amount, output.size() - amount, "NETIF flags: 0x%02X\r\n", netif_default->flags);
+		amount += snprintf(output.data() + amount, output.size() - amount, "Wifi state: %d\r\n", cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA));
 
 		int32_t rssi = 0;
 		cyw43_wifi_get_rssi(&cyw43_state, &rssi);
-		printf("  RSSI: %ld\r\n", rssi);
+		amount += snprintf(output.data() + amount, output.size() - amount, "  RSSI: %ld\r\n", rssi);
 		uint32_t pm_state = 0;
 		cyw43_wifi_get_pm(&cyw43_state, &pm_state);
-		printf("power mode: 0x%08lX\r\n", pm_state);
-		printf("ticks: %lu\r\n", xTaskGetTickCount());
-		printf("FreeRTOS Heap Free: %u\r\n", xPortGetFreeHeapSize());
+		amount += snprintf(output.data() + amount, output.size() - amount, "power mode: 0x%08lX\r\n", pm_state);
+		amount += snprintf(output.data() + amount, output.size() - amount, "ticks: %lu\r\n", xTaskGetTickCount());
+		amount += snprintf(output.data() + amount, output.size() - amount, "FreeRTOS Heap Free: %u\r\n", xPortGetFreeHeapSize());
 		UBaseType_t number_of_tasks = uxTaskGetNumberOfTasks();
-		printf("Tasks active: %lu\r\n", number_of_tasks);
+		amount += snprintf(output.data() + amount, output.size() - amount, "Tasks active: %lu\r\n", number_of_tasks);
 		std::vector<TaskStatus_t> tasks(number_of_tasks);
 		uxTaskGetSystemState(tasks.data(), tasks.size(), nullptr);
 		for (auto& status: tasks)
 		{
-			printf("  task name: %s\r\n", status.pcTaskName);
-			printf("  task mark: %lu\r\n", status.usStackHighWaterMark);
+			amount += snprintf(output.data() + amount, output.size() - amount, "  task name: %s\r\n", status.pcTaskName);
+			amount += snprintf(output.data() + amount, output.size() - amount, "  task mark: %lu\r\n", status.usStackHighWaterMark);
 		}
 
 		char foo[2 * PICO_UNIQUE_BOARD_ID_SIZE_BYTES + 1];
 		pico_get_unique_board_id_string(foo, sizeof(foo));
-		printf("unique id: %s\r\n", foo);
+		amount += snprintf(output.data() + amount, output.size() - amount, "unique id: %s\r\n", foo);
 
-		printf("log size: %u\r\n", sys_log.size());
+		amount += snprintf(output.data() + amount, output.size() - amount, "log size: %u\r\n", sys_log.size());
 		for (size_t i = 0; i < sys_log.size(); ++i)
 		{
-			printf("log %u: %s\r\n", i, sys_log[i].c_str());
+			amount += snprintf(output.data() + amount, output.size() - amount, "log %u: %s\r\n", i, sys_log[i].c_str());
 		}
 	}
 
-	if (line[0] == 'r')
+	if (input == "programming")
 	{
-		printf("Rebooting into programming mode...\r\n");
-		fflush(stdout);
+		snprintf(output.data(), output.size(), "Rebooting into programming mode...\r\n");
 		gpico::bootsel_reset();
 	}
 
-	if (line[0] == 'k')
+	if (input == "reboot")
 	{
-		printf("Killing (hanging)...\r\n");
-		fflush(stdout);
+		snprintf(output.data(), output.size(), "Killing (hanging)...\r\n");
 		gpico::flash_reset();
 	}
+}
+
+static void run(const char* line, std::string& buffer)
+{
+	command(line, std::span(buffer.data(), buffer.data() + buffer.size()));
+	printf("%s", buffer.data());
+	fflush(stdout);
 }
 
 namespace pcrb
@@ -87,6 +99,7 @@ namespace pcrb
 
 void cli_task(void*)
 {
+	std::string buffer(32*1024, '\0');
 	char line[33] = {0};
 	int pos = 0;
 	printf("> ");
@@ -100,7 +113,8 @@ void cli_task(void*)
 			{
 				printf("\r\n");
 				line[pos] = '\0';
-				run(line);
+				run(line, buffer);
+				memset(line, 0, sizeof(line));
 				pos = 0;
 				printf("> ");
 				continue;

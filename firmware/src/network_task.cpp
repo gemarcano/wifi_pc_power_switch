@@ -50,13 +50,14 @@ void network_task(void*)
 			auto request_result = server_.handle_request(std::move(*accept_result), std::span(data));
 			if (request_result)
 			{
-				if (request_result.value() != 4)
+				size_t amount = request_result.value();
+				if (amount != 4)
 				{
-					sys_log.push(std::format("Received bad network request with size {}", request_result.value()));
+					sys_log.push(std::format("Received bad network request with size {}", amount));
 					continue;
 				}
 				uint32_t request;
-				memcpy(&request, data.data(), request_result.value());
+				memcpy(&request, data.data(), amount);
 				request = ntoh(request);
 				sys_log.push(std::format("Received network request {}", request));
 				xQueueSendToBack(switch_comms.get(), &request, 0);
