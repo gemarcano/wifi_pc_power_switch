@@ -60,7 +60,9 @@ static void command(std::string_view input, std::span<char> output)
 		for (auto& status: tasks)
 		{
 			amount += snprintf(output.data() + amount, output.size() - amount, "  task name: %s\r\n", status.pcTaskName);
-			amount += snprintf(output.data() + amount, output.size() - amount, "  task mark: %lu\r\n", status.usStackHighWaterMark);
+			amount += snprintf(output.data() + amount, output.size() - amount, "    task mark: %lu\r\n", status.usStackHighWaterMark);
+			amount += snprintf(output.data() + amount, output.size() - amount, "    task counter: %lu\r\n", status.ulRunTimeCounter);
+			amount += snprintf(output.data() + amount, output.size() - amount, "    task priority: %lu\r\n", status.uxCurrentPriority);
 		}
 
 		char foo[2 * PICO_UNIQUE_BOARD_ID_SIZE_BYTES + 1];

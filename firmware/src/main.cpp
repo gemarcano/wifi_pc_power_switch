@@ -61,7 +61,7 @@ void init_task(void*)
 
 	sys_log.register_push_callback(print_callback);
 
-	xTaskCreateAffinitySet(pcrb::cli_task, "pcrb_cli", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
+	xTaskCreateAffinitySet(pcrb::cli_task, "pcrb_cli", 512, nullptr, tskIDLE_PRIORITY+1, CPUS_MASK, nullptr);
 	xTaskCreateAffinitySet(pcrb::wifi_management_task, "pcrb_wifi", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
 
 	// Wait for wifi to be ready before continuing, this variable is set by the
@@ -77,7 +77,7 @@ void init_task(void*)
 
 	xTaskCreateAffinitySet(pcrb::switch_task, "pcrb_switch", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
 	xTaskCreateAffinitySet(pcrb::network_task, "pcrb_network", 512 + 1024/4, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
-	xTaskCreateAffinitySet(pcrb::monitor_task, "pcrb_monitor", 256, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
+	xTaskCreateAffinitySet(pcrb::monitor_task, "pcrb_monitor", 256, nullptr, tskIDLE_PRIORITY+1, CPUS_MASK, nullptr);
 
 	vTaskDelete(nullptr);
 	for(;;);
