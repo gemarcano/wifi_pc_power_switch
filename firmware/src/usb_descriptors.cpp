@@ -578,6 +578,7 @@ static const usbd_class_driver_t reset_driver =
 	.open = reset_open,
 	.control_xfer_cb = reset_control_xfer_cb,
 	.xfer_cb = reset_xfer_cb,
+	.xfer_isr = nullptr,
 	.sof = nullptr,
 };
 
@@ -585,4 +586,17 @@ const usbd_class_driver_t* usbd_app_driver_get_cb(uint8_t *driver_count)
 {
 	*driver_count = 1;
 	return &reset_driver;
+}
+
+namespace pcrb
+{
+uint8_t get_boot_select()
+{
+	return strtoul(reinterpret_cast<const char*>(&block_data[3][13]), nullptr, 10);
+}
+
+void set_boot_select(uint8_t select)
+{
+	snprintf(reinterpret_cast<char*>(&block_data[3][0]), DISK_BLOCK_SIZE, "set default=\"%u\"\n", select);
+}
 }

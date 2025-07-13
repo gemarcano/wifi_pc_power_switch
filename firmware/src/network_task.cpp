@@ -5,6 +5,7 @@
 #include <pcrb/network_task.h>
 #include <pcrb/switch_task.h>
 #include <pcrb/server.h>
+#include <pcrb/usb.h>
 
 #include <lwip/sockets.h>
 
@@ -89,12 +90,49 @@ void network_task(void*)
 							send(socket.get(), explanation.data(), explanation.length(), 0);
 							continue;
 						}
-						memcpy(&request, data.data() + 8, 4);
-						request = ntoh(request);
-						auto explanation = std::format("Received network toggle request {}", request);
+						uint32_t time;
+						memcpy(&time, data.data() + 8, 4);
+						time = ntoh(time);
+						auto explanation = std::format("Received network toggle request {}", time);
 						sys_log.push(explanation);
 						send(socket.get(), explanation.data(), explanation.length(), 0);
 						xQueueSendToBack(switch_comms.get(), &request, 0);
+						break;
+					}
+					case 1:
+					{
+						if (amount != 8)
+						{
+							auto explanation = std::format("Received bad network request, bad size {}", amount);
+							sys_log.push(explanation);
+							send(socket.get(), explanation.data(), explanation.length(), 0);
+							continue;
+
+						}
+						auto explanation = std::format("boot select: {}", pcrb::get_boot_select());
+						sys_log.push(explanation);
+						send(socket.get(), explanation.data(), explanation.length(), 0);
+						break;
+					}
+					case 2:
+					{
+						if (amount != 12)
+						{
+							auto explanation = std::format("Received bad network request, bad size {}", amount);
+							sys_log.push(explanation);
+							send(socket.get(), explanation.data(), explanation.length(), 0);
+							continue;
+						}
+						uint32_t select;
+						memcpy(&select, data.data() + 8, 4);
+						select = ntoh(select);
+						auto explanation = std::format("Received boot select request {}", select);
+						sys_log.push(explanation);
+						send(socket.get(), explanation.data(), explanation.length(), 0);
+						pcrb::set_boot_select(select);
+						explanation = std::format("boot select: {}", pcrb::get_boot_select());
+						sys_log.push(explanation);
+						send(socket.get(), explanation.data(), explanation.length(), 0);
 						break;
 					}
 					default:

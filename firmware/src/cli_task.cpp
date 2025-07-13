@@ -4,6 +4,7 @@
 
 #include <pcrb/cli_task.h>
 #include <pcrb/switch_task.h>
+#include <pcrb/usb.h>
 
 #include <gpico/log.h>
 #include <gpico/reset.h>
@@ -22,6 +23,12 @@
 
 using gpico::sys_log;
 
+void toggle(uint32_t time)
+{
+	unsigned data = std::clamp<unsigned>(time, 0, std::numeric_limits<unsigned>::max());
+	xQueueSendToBack(pcrb::switch_comms.get(), &data, 0);
+}
+
 static void command(std::string_view input, std::span<char> output)
 {
 	if (input.starts_with("toggle"))
@@ -31,12 +38,24 @@ static void command(std::string_view input, std::span<char> output)
 		if (ms != 0)
 		{
 			snprintf(output.data(), output.size(), "Toggling switch for %lu milliseconds\r\n", ms);
-			unsigned data = std::clamp<unsigned>(ms, 0, std::numeric_limits<unsigned>::max());
-			xQueueSendToBack(pcrb::switch_comms.get(), &data, 0);
+			toggle(ms);
 		}
 	}
 
-	if (input == "status")
+	else if (input == "get_boot")
+	{
+		snprintf(output.data(), output.size(), "boot select: %u\r\n", pcrb::get_boot_select());
+	}
+
+	else if (input.starts_with("set_boot"))
+	{
+		unsigned long select = 0;
+        std::from_chars(input.substr(9).data(), input.substr(9).data() + input.substr(9).size(), select);
+		pcrb::set_boot_select(select);
+		snprintf(output.data(), output.size(), "set boot select: %lu, actual %u\r\n", select, pcrb::get_boot_select());
+	}
+
+	else if (input == "status")
 	{
 		size_t amount = 0;
 		amount += snprintf(output.data() + amount, output.size() - amount, "IP Address: %s\r\n", ip4addr_ntoa(netif_ip4_addr(netif_list)));
