@@ -36,7 +36,7 @@ void network_task(void*)
 			err = server_.listen(48686);
 			if (err != 0)
 			{
-				sys_log.push(std::format("unable to listen on server, error {}", err));
+				sys_log.push(std::format("unable to listen on server, error {}", strerror(err)));
 			}
 		} while (err != 0);
 
@@ -45,7 +45,7 @@ void network_task(void*)
 			auto accept_result = server_.accept();
 			if (!accept_result)
 			{
-				sys_log.push(std::format("unable to accept socket, error {}", accept_result.error()));
+				sys_log.push(std::format("unable to accept socket, error {}", strerror(accept_result.error())));
 				// FIXME what if the error is terminal? Are there any terminal errors?
 				continue;
 			}
@@ -147,7 +147,10 @@ void network_task(void*)
 			}
 			else
 			{
-				sys_log.push(std::format("failed to handle request: {}", request_result.error()));
+				const char *err = request_result.error() == EAGAIN ? "timeout": strerror(request_result.error());
+				auto explanation = std::format("failed to handle request: {}", err);
+				sys_log.push(explanation);
+				handler.send(explanation);
 			}
 		}
 

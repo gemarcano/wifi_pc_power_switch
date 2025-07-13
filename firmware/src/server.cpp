@@ -18,8 +18,6 @@
 #include <span>
 
 #include <errno.h>
-#undef errno
-extern int errno;
 
 using gpico::sys_log;
 
