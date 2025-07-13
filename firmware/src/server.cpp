@@ -133,33 +133,6 @@ std::expected<socket, int> server::accept()
 }
 
 
-std::expected<std::size_t, int> server::handle_request(socket& sock, std::span<std::byte> data)
-{
-	uint16_t size = 0;
-	for (ssize_t amount = 0, received = 0; received < 2; received += amount)
-	{
-		amount = recv(sock.get(), reinterpret_cast<std::byte*>(&size) + received, 2 - received, 0);
-		if (amount == -1)
-		{
-			return std::unexpected(errno);
-		}
-	}
-	size = ntoh(size);
-
-	size = std::min<uint16_t>(size, data.size());
-
-	for (size_t amount = 0, received = 0; received < size; received += amount)
-	{
-		amount = recv(sock.get(), data.data() + received, size - received, 0);
-		if (amount == -1)
-		{
-			return std::unexpected(errno);
-		}
-	}
-
-	return size;
-}
-
 void server::close()
 {
 	socket_ipv4.shutdown();

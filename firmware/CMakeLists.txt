@@ -16,6 +16,7 @@ add_executable(pc_remote_button
 	src/main.cpp
 	src/ntp.cpp
 	src/server.cpp
+	src/request_handler.cpp
 	src/switch_task.cpp
 	src/network_task.cpp
 	src/cli_task.cpp
