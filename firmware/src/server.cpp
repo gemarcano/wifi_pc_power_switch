@@ -122,6 +122,13 @@ std::expected<socket, int> server::accept()
 	int sock = ::accept(socket_ipv4.get(), reinterpret_cast<sockaddr*>(&remote_addr), &addr_size);
 	if (sock == -1)
 		return std::unexpected(errno);
+
+	constexpr const timeval read_timeout = {
+		.tv_sec = 1,
+		.tv_usec = 0
+	};
+
+	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
 	return socket(sock);
 }
 
@@ -129,11 +136,6 @@ std::expected<socket, int> server::accept()
 std::expected<std::size_t, int> server::handle_request(socket sock, std::span<std::byte> data)
 {
 	uint16_t size = 0;
-	timeval read_timeout = {
-		.tv_sec = 1,
-		.tv_usec = 0
-	};
-	setsockopt(sock.get(), SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
 	for (ssize_t amount = 0, received = 0; received < 2; received += amount)
 	{
 		amount = recv(sock.get(), reinterpret_cast<std::byte*>(&size) + received, 2 - received, 0);
@@ -142,8 +144,8 @@ std::expected<std::size_t, int> server::handle_request(socket sock, std::span<st
 			return std::unexpected(errno);
 		}
 	}
-
 	size = ntoh(size);
+
 	size = std::min<uint16_t>(size, data.size());
 
 	for (size_t amount = 0, received = 0; received < size; received += amount)

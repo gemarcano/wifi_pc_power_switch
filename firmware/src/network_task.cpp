@@ -50,8 +50,11 @@ void network_task(void*)
 			auto request_result = server_.handle_request(std::move(*accept_result), std::span(data));
 			if (request_result)
 			{
+				// First 4 bytes are a magic field, followed by a 4 byte
+				// request. Additional bytes may be required by the request
+				// type.
 				size_t amount = request_result.value();
-				if (amount != 8)
+				if (amount < 8)
 				{
 					sys_log.push(std::format("Received bad network request with size {}", amount));
 					continue;
@@ -68,8 +71,23 @@ void network_task(void*)
 				uint32_t request;
 				memcpy(&request, data.data() + 4, 4);
 				request = ntoh(request);
-				sys_log.push(std::format("Received network request {}", request));
-				xQueueSendToBack(switch_comms.get(), &request, 0);
+				switch (request)
+				{
+					case 0: // toggle, an additional 4 byte field
+						if (amount != 12)
+						{
+							sys_log.push(std::format("Received bad network request, bad size {}", amount));
+							continue;
+						}
+						memcpy(&request, data.data() + 8, 4);
+						request = ntoh(request);
+						sys_log.push(std::format("Received network toggle request {}", request));
+						xQueueSendToBack(switch_comms.get(), &request, 0);
+						break;
+					default:
+						sys_log.push(std::format("Received bad network request, unknown command {}", request));
+						continue;
+				}
 			}
 			else
 			{
