@@ -6,6 +6,8 @@
 #include <pcrb/switch_task.h>
 #include <pcrb/server.h>
 
+#include <lwip/sockets.h>
+
 #include <gpico/log.h>
 
 #include <cstdint>
@@ -45,9 +47,10 @@ void network_task(void*)
 				// FIXME what if the error is terminal? Are there any terminal errors?
 				continue;
 			}
+			auto& socket = *accept_result;
 			sys_log.push("new connection accepted");
 			std::array<std::byte, 1024> data;
-			auto request_result = server_.handle_request(std::move(*accept_result), std::span(data));
+			auto request_result = server_.handle_request(socket, std::span(data));
 			if (request_result)
 			{
 				// First 4 bytes are a magic field, followed by a 4 byte
@@ -56,7 +59,9 @@ void network_task(void*)
 				size_t amount = request_result.value();
 				if (amount < 8)
 				{
-					sys_log.push(std::format("Received bad network request with size {}", amount));
+					auto explanation = std::format("Received bad network request with size {}", amount);
+					sys_log.push(explanation);
+					send(socket.get(), explanation.data(), explanation.length(), 0);
 					continue;
 				}
 				uint32_t magic;
@@ -64,7 +69,9 @@ void network_task(void*)
 				magic = ntoh(magic);
 				if (magic != 0x416E614D)
 				{
-					sys_log.push(std::format("Received bad network request, bad magic {}", magic));
+					auto explanation = std::format("Received bad network request, bad magic {}", magic);
+					sys_log.push(explanation);
+					send(socket.get(), explanation.data(), explanation.length(), 0);
 					continue;
 				}
 
@@ -74,19 +81,29 @@ void network_task(void*)
 				switch (request)
 				{
 					case 0: // toggle, an additional 4 byte field
+					{
 						if (amount != 12)
 						{
-							sys_log.push(std::format("Received bad network request, bad size {}", amount));
+							auto explanation = std::format("Received bad network request, bad size {}", amount);
+							sys_log.push(explanation);
+							send(socket.get(), explanation.data(), explanation.length(), 0);
 							continue;
 						}
 						memcpy(&request, data.data() + 8, 4);
 						request = ntoh(request);
-						sys_log.push(std::format("Received network toggle request {}", request));
+						auto explanation = std::format("Received network toggle request {}", request);
+						sys_log.push(explanation);
+						send(socket.get(), explanation.data(), explanation.length(), 0);
 						xQueueSendToBack(switch_comms.get(), &request, 0);
 						break;
+					}
 					default:
-						sys_log.push(std::format("Received bad network request, unknown command {}", request));
+					{
+						auto explanation = std::format("Received bad network request, unknown command {}", request);
+						sys_log.push(explanation);
+						send(socket.get(), explanation.data(), explanation.length(), 0);
 						continue;
+					}
 				}
 			}
 			else

@@ -147,7 +147,7 @@ public:
 	/** FIXME this is super specialized
 	 *
 	 */
-	static std::expected<std::size_t, int> handle_request(socket sock, std::span<std::byte> data);
+	static std::expected<std::size_t, int> handle_request(socket& sock, std::span<std::byte> data);
 
 	/** Closes and shuts down the server socket.
 	 */

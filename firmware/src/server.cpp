@@ -133,7 +133,7 @@ std::expected<socket, int> server::accept()
 }
 
 
-std::expected<std::size_t, int> server::handle_request(socket sock, std::span<std::byte> data)
+std::expected<std::size_t, int> server::handle_request(socket& sock, std::span<std::byte> data)
 {
 	uint16_t size = 0;
 	for (ssize_t amount = 0, received = 0; received < 2; received += amount)
