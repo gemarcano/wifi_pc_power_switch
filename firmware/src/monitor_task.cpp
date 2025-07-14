@@ -29,7 +29,7 @@ void monitor_task(void*)
 {
 	constexpr const unsigned on_state_gpio = 21;
 	gpio_init(on_state_gpio);
-	gpio_disable_pulls(on_state_gpio);
+	gpio_pull_down(on_state_gpio);
 	gpio_set_dir(on_state_gpio, GPIO_IN);
 
 	static pcrb::pc_switch<22> switch_(false);

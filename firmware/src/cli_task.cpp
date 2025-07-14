@@ -5,6 +5,7 @@
 #include <pcrb/cli_task.h>
 #include <pcrb/switch_task.h>
 #include <pcrb/usb.h>
+#include <pcrb/monitor_task.h>
 
 #include <gpico/log.h>
 #include <gpico/reset.h>
@@ -40,6 +41,11 @@ static void command(std::string_view input, std::span<char> output)
 			snprintf(output.data(), output.size(), "Toggling switch for %lu milliseconds\r\n", ms);
 			toggle(ms);
 		}
+	}
+
+	if (input == "sense")
+	{
+		snprintf(output.data(), output.size(), "sense: %u\r\n", pcrb::current_pc_state());
 	}
 
 	else if (input == "get_boot")

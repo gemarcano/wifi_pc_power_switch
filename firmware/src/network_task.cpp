@@ -3,6 +3,7 @@
 /// @file
 
 #include <pcrb/network_task.h>
+#include <pcrb/monitor_task.h>
 #include <pcrb/switch_task.h>
 #include <pcrb/server.h>
 #include <pcrb/request_handler.h>
@@ -97,7 +98,7 @@ void network_task(void*)
 						auto explanation = std::format("Received network toggle request {}", time);
 						sys_log.push(explanation);
 						handler.send(explanation);
-						xQueueSendToBack(switch_comms.get(), &request, 0);
+						xQueueSendToBack(switch_comms.get(), &time, 0);
 						break;
 					}
 					case 1:
@@ -135,6 +136,22 @@ void network_task(void*)
 						sys_log.push(explanation);
 						handler.send(explanation);
 						break;
+					}
+					case 3:
+					{
+						if (amount != 8)
+						{
+							auto explanation = std::format("Received bad network request, bad size {}", amount);
+							sys_log.push(explanation);
+							handler.send(explanation);
+							continue;
+
+						}
+						auto explanation = std::format("PC 3.3V rail status: {}", pcrb::current_pc_state());
+						sys_log.push(explanation);
+						handler.send(explanation);
+						break;
+
 					}
 					default:
 					{
