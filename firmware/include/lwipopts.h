@@ -109,4 +109,7 @@
 #undef LWIP_PROVIDE_ERRNO
 #define LWIP_ERRNO_STDINCLUDE
 
+// Gabriel Marcano: This is something I'm patching in LWIP to fix  MEMP_NUM_SYS_TIMEOUT
+#define LWIP_MQTT 1
+
 #endif//LWIPOPTS_H_

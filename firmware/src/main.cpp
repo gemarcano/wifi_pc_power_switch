@@ -77,7 +77,7 @@ void init_task(void*)
 	//cyw43_arch_deinit();
 
 	xTaskCreateAffinitySet(pcrb::switch_task, "pcrb_switch", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
-	xTaskCreateAffinitySet(pcrb::network_task, "pcrb_network", 512 + 1024/4, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
+	xTaskCreateAffinitySet(pcrb::network_task, "pcrb_network", 512*2 + 1024/4, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
 	xTaskCreateAffinitySet(pcrb::monitor_task, "pcrb_monitor", 256, nullptr, tskIDLE_PRIORITY+1, CPUS_MASK, nullptr);
 	xTaskCreateAffinitySet(pcrb::mqtt_task, "pcrb_mqtt", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
 
