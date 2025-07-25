@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR LGPL-2.1-or-later
+// SPDX-FileCopyrightText: Gabriel Marcano, 2025
+/// @file
+
 #include <pcrb/mqtt.h>
 
 #include <lwip/apps/mqtt.h>
@@ -101,7 +105,7 @@ err_t do_connect(mqtt_client_t *client)
 	client_info.client_id = "pcrb_";
 	// FIXME do DNS lookup for obsidian?
 	ip_addr_t ip;
-	IP4_ADDR(&ip, 192, 168, 5, 123);
+	IP_ADDR4(&ip, 192, 168, 5, 123);
 	return mqtt_client_connect(client, &ip, MQTT_PORT, mqtt_connection_cb, &manager, &client_info);
 }
 

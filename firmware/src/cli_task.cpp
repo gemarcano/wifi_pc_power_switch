@@ -6,6 +6,9 @@
 #include <pcrb/switch_task.h>
 #include <pcrb/usb.h>
 #include <pcrb/monitor_task.h>
+#include <pcrb/dns.h>
+
+#include <lwip/netdb.h>
 
 #include <gpico/log.h>
 #include <gpico/reset.h>
@@ -43,7 +46,7 @@ static void command(std::string_view input, std::span<char> output)
 		}
 	}
 
-	if (input == "sense")
+	else if (input == "sense")
 	{
 		snprintf(output.data(), output.size(), "sense: %u\r\n", pcrb::current_pc_state());
 	}
@@ -101,16 +104,45 @@ static void command(std::string_view input, std::span<char> output)
 		}
 	}
 
-	if (input == "programming")
+	else if (input == "programming")
 	{
 		snprintf(output.data(), output.size(), "Rebooting into programming mode...\r\n");
 		gpico::bootsel_reset();
 	}
 
-	if (input == "reboot")
+	else if (input == "reboot")
 	{
 		snprintf(output.data(), output.size(), "Killing (hanging)...\r\n");
 		gpico::flash_reset();
+	}
+
+	else if (input.starts_with("dns"))
+	{
+		std::string_view name = input.substr(4).data();
+		if (name.size())
+		{
+			ssize_t amount = snprintf(output.data(), output.size(), "Looking up %s\r\n", name.data());
+			auto result = pcrb::dns_query(name);
+			if (result)
+			{
+				std::optional<ip_addr_t> address = pcrb::extract_ip_address(*result);
+#if LWIP_IPV6
+				std::array<char, INET6_ADDRSTRLEN> host;
+#else
+				std::array<char, INET_ADDRSTRLEN> host;
+#endif
+				if (address)
+				{
+					ipaddr_ntoa_r(&*address, host.data(), host.size());
+					snprintf(output.data() + amount, output.size() - amount, "  Resolved %s as %s\r\n", name.data(), host.data());
+				}
+				else
+				{
+					snprintf(output.data() + amount, output.size() - amount, "  No valid IP found\r\n");
+				}
+			}
+		}
+
 	}
 }
 

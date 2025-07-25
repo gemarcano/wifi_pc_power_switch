@@ -14,6 +14,7 @@ pico_sdk_init()
 add_executable(pc_remote_button
 	src/main.cpp
 	src/mqtt.cpp
+	src/dns.cpp
 	src/ntp.cpp
 	src/server.cpp
 	src/request_handler.cpp
