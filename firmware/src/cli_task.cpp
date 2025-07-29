@@ -146,9 +146,9 @@ static void command(std::string_view input, std::span<char> output)
 	}
 }
 
-static void run(const char* line, std::string& buffer)
+static void run(const char* line, std::span<char> buffer)
 {
-	command(line, std::span(buffer.data(), buffer.data() + buffer.size()));
+	command(line, buffer);
 	printf("%s", buffer.data());
 	fflush(stdout);
 }
@@ -158,9 +158,10 @@ namespace pcrb
 
 void cli_task(void*)
 {
-	std::string buffer(32*1024, '\0');
+	std::array<char, 4*1024> buffer = {};
+
 	char line[33] = {0};
-	int pos = 0;
+	size_t pos = 0;
 	printf("> ");
 	for(;;)
 	{

@@ -62,7 +62,7 @@ void init_task(void*)
 
 	sys_log.register_push_callback(print_callback);
 
-	xTaskCreateAffinitySet(pcrb::cli_task, "pcrb_cli", 512, nullptr, tskIDLE_PRIORITY+1, CPUS_MASK, nullptr);
+	xTaskCreateAffinitySet(pcrb::cli_task, "pcrb_cli", 2*1024, nullptr, tskIDLE_PRIORITY+1, CPUS_MASK, nullptr);
 	xTaskCreateAffinitySet(pcrb::wifi_management_task, "pcrb_wifi", 512, nullptr, tskIDLE_PRIORITY+2, CPUS_MASK, nullptr);
 
 	// Wait for wifi to be ready before continuing, this variable is set by the
