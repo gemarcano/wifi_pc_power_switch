@@ -38,7 +38,7 @@ std::expected<std::size_t, int> request_handler::read(std::span<std::byte> data)
 
 	size = std::min<uint16_t>(size, data.size());
 
-	for (size_t amount = 0, received = 0; received < size; received += amount)
+	for (ssize_t amount = 0, received = 0; received < size; received += amount)
 	{
 		amount = recv(socket_.get(), data.data() + received, size - received, 0);
 		if (amount == -1)
