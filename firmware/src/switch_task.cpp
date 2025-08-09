@@ -2,13 +2,13 @@
 // SPDX-FileCopyrightText: Gabriel Marcano, 2023 - 2024
 /// @file
 
-#include <pcrb/switch_task.h>
 #include <pcrb/switch.h>
+#include <pcrb/switch_task.h>
 
 #include <gpico/log.h>
 
-#include <pico/stdlib.h>
 #include <pico/cyw43_arch.h>
+#include <pico/stdlib.h>
 
 #include <FreeRTOS.h>
 #include <queue.h>
@@ -23,7 +23,7 @@ namespace pcrb
 
 switch_queue switch_comms;
 
-void switch_task(void*)
+void switch_task(void *)
 {
 	static pcrb::pc_switch<22> switch_(false);
 	for (;;)
@@ -39,4 +39,4 @@ void switch_task(void*)
 	}
 }
 
-}
+} // namespace pcrb

@@ -2,20 +2,20 @@
 // SPDX-FileCopyrightText: Gabriel Marcano, 2023 - 2025
 /// @file
 
-#include <pcrb/switch_task.h>
 #include <pcrb/switch.h>
+#include <pcrb/switch_task.h>
 
 #include <gpico/log.h>
 
-#include <pico/stdlib.h>
 #include <pico/cyw43_arch.h>
+#include <pico/stdlib.h>
 
 #include <FreeRTOS.h>
 #include <queue.h>
 #include <task.h>
 
-#include <format>
 #include <atomic>
+#include <format>
 
 using gpico::sys_log;
 
@@ -25,7 +25,7 @@ namespace pcrb
 static std::atomic_bool pc_state = false;
 
 // FIXME wouldn't it be better to do this with interrupts?
-void monitor_task(void*)
+void monitor_task(void *)
 {
 	constexpr const unsigned on_state_gpio = 21;
 	gpio_init(on_state_gpio);
@@ -50,4 +50,4 @@ bool current_pc_state()
 	return pc_state;
 }
 
-}
+} // namespace pcrb

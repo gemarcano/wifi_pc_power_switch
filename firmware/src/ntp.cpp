@@ -8,28 +8,29 @@
 #include <queue.h>
 #include <task.h>
 
-#include <pico/stdlib.h>
 #include <pico/cyw43_arch.h>
+#include <pico/stdlib.h>
 
-#include <pcrb/switch.h>
 #include <pcrb/server.h>
+#include <pcrb/switch.h>
 
 #include <lwip/dns.h>
-#include <lwip/pbuf.h>
-#include <lwip/udp.h>
-#include <lwip/sockets.h>
 #include <lwip/netdb.h>
+#include <lwip/pbuf.h>
+#include <lwip/sockets.h>
+#include <lwip/udp.h>
 
+#include <atomic>
 #include <cstring>
 #include <ctime>
-#include <memory>
 #include <expected>
-#include <atomic>
+#include <memory>
 
-constexpr const char* NTP_SERVER = "pool.ntp.org";
+constexpr const char *NTP_SERVER = "pool.ntp.org";
 constexpr const int NTP_MSG_LEN = 48;
 constexpr const int NTP_PORT = 123;
-constexpr const int NTP_DELTA = 2208988800; // seconds between 1 Jan 1900 and 1 Jan 1970
+constexpr const int NTP_DELTA =
+	2208988800; // seconds between 1 Jan 1900 and 1 Jan 1970
 constexpr const int ntpEST_TIME = (30 * 1000);
 constexpr const int NTP_FAIL_TIME = (10 * 1000);
 
@@ -57,8 +58,13 @@ int ntp_client::request()
 	int err = getaddrinfo(NTP_SERVER, "123", &ntp_info, &dns_result);
 	printf("DNS err: %d %p\n", err, dns_result);
 	printf("High water mark: %lu\n", uxTaskGetStackHighWaterMark(NULL));
-	printf("%d %d %d\n", dns_result->ai_family, dns_result->ai_socktype, dns_result->ai_protocol);
-	int s = socket(dns_result->ai_family, dns_result->ai_socktype, dns_result->ai_protocol);
+	printf(
+		"%d %d %d\n", dns_result->ai_family, dns_result->ai_socktype,
+		dns_result->ai_protocol
+	);
+	int s = socket(
+		dns_result->ai_family, dns_result->ai_socktype, dns_result->ai_protocol
+	);
 	printf("socket: %d\n", s);
 	timeval timeout = {
 		.tv_sec = 5,
@@ -80,18 +86,21 @@ int ntp_client::request()
 	uint8_t stratum = request[1];
 
 	// Check the result
-	if (amount == NTP_MSG_LEN &&
-		mode == 0x4 &&
-		stratum != 0)
+	if (amount == NTP_MSG_LEN && mode == 0x4 && stratum != 0)
 	{
 		uint8_t seconds_buf[4] = {};
 		memcpy(seconds_buf, request + 40, 4);
-		uint32_t seconds_since_1900 = seconds_buf[0] << 24 | seconds_buf[1] << 16 | seconds_buf[2] << 8 | seconds_buf[3];
+		uint32_t seconds_since_1900 = seconds_buf[0] << 24 |
+									  seconds_buf[1] << 16 |
+									  seconds_buf[2] << 8 | seconds_buf[3];
 		uint32_t seconds_since_1970 = seconds_since_1900 - NTP_DELTA;
 		time_t epoch = seconds_since_1970;
 		struct tm *utc = gmtime(&epoch);
-		printf("got ntp response: %02d/%02d/%04d %02d:%02d:%02d\n", utc->tm_mday, utc->tm_mon + 1, utc->tm_year + 1900,
-			   utc->tm_hour, utc->tm_min, utc->tm_sec);
+		printf(
+			"got ntp response: %02d/%02d/%04d %02d:%02d:%02d\n", utc->tm_mday,
+			utc->tm_mon + 1, utc->tm_year + 1900, utc->tm_hour, utc->tm_min,
+			utc->tm_sec
+		);
 		ntp_timeout_time = make_timeout_time_ms(ntpEST_TIME);
 		return 0;
 	}
@@ -102,6 +111,9 @@ int ntp_client::request()
 
 bool ntp_client::time_elapsed() const
 {
-	printf("diff: %lld\n", absolute_time_diff_us(get_absolute_time(), ntp_timeout_time));
+	printf(
+		"diff: %lld\n",
+		absolute_time_diff_us(get_absolute_time(), ntp_timeout_time)
+	);
 	return absolute_time_diff_us(get_absolute_time(), ntp_timeout_time) < 0;
 }

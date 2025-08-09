@@ -9,18 +9,17 @@
 
 #include <lwip/sockets.h>
 
-#include <string>
 #include <format>
-#include <vector>
 #include <span>
+#include <string>
+#include <vector>
 
 using gpico::sys_log;
 
 namespace pcrb
 {
 
-request_handler::request_handler(socket socket_)
-:socket_(std::move(socket_))
+request_handler::request_handler(socket socket_) : socket_(std::move(socket_))
 {}
 
 std::expected<std::size_t, int> request_handler::read(std::span<std::byte> data)
@@ -28,7 +27,10 @@ std::expected<std::size_t, int> request_handler::read(std::span<std::byte> data)
 	uint16_t size = 0;
 	for (ssize_t amount = 0, received = 0; received < 2; received += amount)
 	{
-		amount = recv(socket_.get(), reinterpret_cast<std::byte*>(&size) + received, 2 - received, 0);
+		amount = recv(
+			socket_.get(), reinterpret_cast<std::byte *>(&size) + received,
+			2 - received, 0
+		);
 		if (amount == -1)
 		{
 			return std::unexpected(errno);
@@ -40,7 +42,8 @@ std::expected<std::size_t, int> request_handler::read(std::span<std::byte> data)
 
 	for (ssize_t amount = 0, received = 0; received < size; received += amount)
 	{
-		amount = recv(socket_.get(), data.data() + received, size - received, 0);
+		amount =
+			recv(socket_.get(), data.data() + received, size - received, 0);
 		if (amount == -1)
 		{
 			return std::unexpected(errno);
@@ -60,4 +63,4 @@ int request_handler::send(std::string_view data)
 	return ::send(socket_.get(), data.data(), data.size(), 0);
 }
 
-}
+} // namespace pcrb

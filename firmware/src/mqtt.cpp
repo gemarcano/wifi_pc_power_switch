@@ -4,19 +4,19 @@
 
 #include <secrets.h>
 
-#include <pcrb/mqtt.h>
 #include <pcrb/dns.h>
+#include <pcrb/mqtt.h>
 
 #include <lwip/apps/mqtt.h>
 #include <lwip/apps/mqtt_priv.h>
 
 #include <gpico/log.h>
 
-#include <span>
 #include <array>
 #include <atomic>
 #include <cstring>
 #include <format>
+#include <span>
 
 using gpico::sys_log;
 
@@ -35,7 +35,10 @@ public:
 			ulTaskNotifyTake(false, portMAX_DELAY);
 		}
 
-		std::copy_n(buffer.begin(), std::min(output.size(), buffer.size()), output.begin());
+		std::copy_n(
+			buffer.begin(), std::min(output.size(), buffer.size()),
+			output.begin()
+		);
 		ready = false;
 	}
 
@@ -53,7 +56,8 @@ public:
 		{
 			return query_result.error();
 		}
-		std::optional<ip_addr_t> extract_result = pcrb::extract_ip_address(*query_result);
+		std::optional<ip_addr_t> extract_result =
+			pcrb::extract_ip_address(*query_result);
 		if (!extract_result)
 		{
 			return ERR_VAL;
@@ -65,7 +69,9 @@ public:
 		client_info.client_id = "pcrb_";
 		while (!connected)
 		{
-			err_t err = mqtt_client_connect(&client, &ip, MQTT_PORT, mqtt_connection_cb, this, &client_info);
+			err_t err = mqtt_client_connect(
+				&client, &ip, MQTT_PORT, mqtt_connection_cb, this, &client_info
+			);
 			if (err != ERR_OK)
 			{
 				sys_log.push(std::format("mqtt: connection error %d", err));
@@ -84,13 +90,18 @@ public:
 		if (!connected)
 			return false;
 
-		mqtt_set_inpub_callback(&client, mqtt_incoming_publish_cb, mqtt_incoming_data_cb, this);
+		mqtt_set_inpub_callback(
+			&client, mqtt_incoming_publish_cb, mqtt_incoming_data_cb, this
+		);
 		while (!subscribed)
 		{
-			err_t error = mqtt_subscribe(&client, "pcrb", 2, mqtt_sub_request_cb, this);
+			err_t error =
+				mqtt_subscribe(&client, "pcrb", 2, mqtt_sub_request_cb, this);
 			if (error != ERR_OK)
 			{
-				sys_log.push(std::format("mqtt: failed to initiate subscribe: {}", error));
+				sys_log.push(
+					std::format("mqtt: failed to initiate subscribe: {}", error)
+				);
 			}
 			else
 			{
@@ -102,7 +113,6 @@ public:
 	}
 
 private:
-
 	size_t read = 0;
 	size_t size = 0;
 	std::atomic_bool connected = false;
@@ -142,34 +152,39 @@ private:
 		return true;
 	}
 
-	static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags)
+	static void
+	mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags)
 	{
-		mqtt_manager* manager = reinterpret_cast<mqtt_manager*>(arg);
+		mqtt_manager *manager = reinterpret_cast<mqtt_manager *>(arg);
 		// FIXME what to do if push_incoming fails?
 		manager->push_incoming(
 			std::span<const std::byte>(
-				reinterpret_cast<const std::byte*>(data), len));
+				reinterpret_cast<const std::byte *>(data), len
+			)
+		);
 
 		if (flags == MQTT_DATA_FLAG_LAST)
 		{
 			// FIXME send notification to task that data is ready?
-
 		}
 	}
 
-	static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len)
+	static void
+	mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len)
 	{
-		mqtt_manager* manager = reinterpret_cast<mqtt_manager*>(arg);
+		mqtt_manager *manager = reinterpret_cast<mqtt_manager *>(arg);
 		// FIXME what if start_incoming fails?
 		manager->start_incoming(tot_len);
 	}
 
 	static void mqtt_sub_request_cb(void *arg, err_t result)
 	{
-		mqtt_manager* manager = reinterpret_cast<mqtt_manager*>(arg);
+		mqtt_manager *manager = reinterpret_cast<mqtt_manager *>(arg);
 		if (result != ERR_OK)
 		{
-			sys_log.push(std::format("mqtt: subscribe result error: {}", result));
+			sys_log.push(
+				std::format("mqtt: subscribe result error: {}", result)
+			);
 		}
 		else
 		{
@@ -178,16 +193,22 @@ private:
 		xTaskNotifyGive(manager->task_handle);
 	}
 
-	static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status)
+	static void mqtt_connection_cb(
+		mqtt_client_t *client, void *arg, mqtt_connection_status_t status
+	)
 	{
-		mqtt_manager* manager = reinterpret_cast<mqtt_manager*>(arg);
+		mqtt_manager *manager = reinterpret_cast<mqtt_manager *>(arg);
 		if (status == MQTT_CONNECT_ACCEPTED)
 		{
 			manager->connected = true;
 		}
 		else
 		{
-			sys_log.push(std::format("mqtt: failed to connect: {}", static_cast<int>(status)));
+			sys_log.push(
+				std::format(
+					"mqtt: failed to connect: {}", static_cast<int>(status)
+				)
+			);
 			// FIXME anything else?
 		}
 		xTaskNotifyGive(manager->task_handle);
@@ -197,16 +218,20 @@ private:
 namespace pcrb
 {
 
-void mqtt_task(void*)
+void mqtt_task(void *)
 {
 	manager.connect();
 	manager.subscribe();
-	for(;;)
+	for (;;)
 	{
 		std::array<std::byte, 1024> buffer;
 		manager.get(buffer);
-		sys_log.push(std::format("mqtt data: {}", reinterpret_cast<const char*>(buffer.data())));
+		sys_log.push(
+			std::format(
+				"mqtt data: {}", reinterpret_cast<const char *>(buffer.data())
+			)
+		);
 	}
 }
 
-}
+} // namespace pcrb

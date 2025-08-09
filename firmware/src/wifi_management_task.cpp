@@ -8,15 +8,15 @@
 
 #include <gpico/log.h>
 
-#include <pico/cyw43_arch.h>
 #include <lwip/netdb.h>
+#include <pico/cyw43_arch.h>
 
 #include <FreeRTOS.h>
 #include <queue.h>
 #include <task.h>
 
-#include <cstdint>
 #include <atomic>
+#include <cstdint>
 #include <format>
 
 using gpico::sys_log;
@@ -29,23 +29,41 @@ std::atomic_bool wifi_initd = false;
 static void status_callback(netif *netif_)
 {
 	sys_log.push("status: changed");
-	sys_log.push(std::format("status: IP Address: {}", ip4addr_ntoa(netif_ip4_addr(netif_))));
+	sys_log.push(
+		std::format(
+			"status: IP Address: {}", ip4addr_ntoa(netif_ip4_addr(netif_))
+		)
+	);
 	sys_log.push(std::format("status: NETIF flags: {:#02x}", netif_->flags));
 	int32_t rssi = 0;
 	cyw43_wifi_get_rssi(&cyw43_state, &rssi);
 	sys_log.push(std::format("status: RSSI: {}", rssi));
-	sys_log.push(std::format("status: Wifi state: {}", cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA)));
+	sys_log.push(
+		std::format(
+			"status: Wifi state: {}",
+			cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA)
+		)
+	);
 }
 
 static void link_callback(netif *netif_)
 {
 	sys_log.push("link changed");
-	sys_log.push(std::format("link: IP Address: {}", ip4addr_ntoa(netif_ip4_addr(netif_))));
+	sys_log.push(
+		std::format(
+			"link: IP Address: {}", ip4addr_ntoa(netif_ip4_addr(netif_))
+		)
+	);
 	sys_log.push(std::format("link: NETIF flags: {:#02x}", netif_->flags));
 	int32_t rssi = 0;
 	cyw43_wifi_get_rssi(&cyw43_state, &rssi);
 	sys_log.push(std::format("link: RSSI: {}", rssi));
-	sys_log.push(std::format("link: Wifi state: {}", cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA)));
+	sys_log.push(
+		std::format(
+			"link: Wifi state: {}",
+			cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA)
+		)
+	);
 }
 
 static void init_wifi()
@@ -54,7 +72,10 @@ static void init_wifi()
 	for (;;)
 	{
 		int result = 0;
-		if (!(result = cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000))) {
+		if (!(result = cyw43_arch_wifi_connect_timeout_ms(
+				  WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000
+			  )))
+		{
 			sys_log.push("    DONE");
 			break;
 		}
@@ -66,7 +87,7 @@ static void init_wifi()
 	}
 }
 
-void wifi_management_task(void*)
+void wifi_management_task(void *)
 {
 	sys_log.push("Initializing cyw43 with USA region...: ");
 	for (;;)
@@ -97,13 +118,18 @@ void wifi_management_task(void*)
 
 	int wifi_state = cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA);
 	TickType_t last = xTaskGetTickCount();
-	for(;;)
+	for (;;)
 	{
 		int current_state = cyw43_wifi_link_status(&cyw43_state, CYW43_ITF_STA);
-		if (current_state != CYW43_LINK_JOIN || !(netif_default->flags & NETIF_FLAG_LINK_UP))
+		if (current_state != CYW43_LINK_JOIN ||
+			!(netif_default->flags & NETIF_FLAG_LINK_UP))
 		{
 			sys_log.push(std::format("wifi: state is bad? {}", current_state));
-			sys_log.push(std::format("wifi: or is it flags? {:#02x}", netif_default->flags));
+			sys_log.push(
+				std::format(
+					"wifi: or is it flags? {:#02x}", netif_default->flags
+				)
+			);
 			if (current_state != CYW43_LINK_DOWN)
 			{
 				sys_log.push(std::format("wifi: disconnecting from network"));
@@ -111,10 +137,22 @@ void wifi_management_task(void*)
 			}
 			int connect_result;
 			sys_log.push(std::format("wifi: trying to reconnect"));
-			while ((connect_result = cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000))) {
-				sys_log.push(std::format("FAILED to reconnect, result {}, trying again", connect_result));
+			while (
+				(connect_result = cyw43_arch_wifi_connect_timeout_ms(
+					 WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000
+				 ))
+			)
+			{
+				sys_log.push(
+					std::format(
+						"FAILED to reconnect, result {}, trying again",
+						connect_result
+					)
+				);
 			}
-			sys_log.push(std::format("wifi: hopefully succeeded in connecting"));
+			sys_log.push(
+				std::format("wifi: hopefully succeeded in connecting")
+			);
 			if (current_state != wifi_state)
 				wifi_state = current_state;
 		}
@@ -122,4 +160,4 @@ void wifi_management_task(void*)
 	}
 }
 
-}
+} // namespace pcrb

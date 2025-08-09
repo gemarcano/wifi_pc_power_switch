@@ -7,15 +7,15 @@
 #include <gpico/log.h>
 
 #include <lwip/dns.h>
-#include <lwip/pbuf.h>
-#include <lwip/udp.h>
-#include <lwip/sockets.h>
 #include <lwip/netdb.h>
+#include <lwip/pbuf.h>
+#include <lwip/sockets.h>
+#include <lwip/udp.h>
 
-#include <string>
 #include <format>
-#include <vector>
 #include <span>
+#include <string>
+#include <vector>
 
 #include <errno.h>
 
@@ -24,12 +24,10 @@ using gpico::sys_log;
 namespace pcrb
 {
 
-socket::socket()
-:socket_(-1)
+socket::socket() : socket_(-1)
 {}
 
-socket::socket(int sock)
-:socket_(sock)
+socket::socket(int sock) : socket_(sock)
 {}
 
 socket::~socket()
@@ -52,8 +50,7 @@ void socket::close()
 	socket_ = -1;
 }
 
-socket::socket(socket&& sock)
-:socket_(-1)
+socket::socket(socket&& sock) : socket_(-1)
 {
 	std::swap(socket_, sock.socket_);
 }
@@ -89,13 +86,16 @@ int server::listen(uint16_t port)
 	};
 	addrinfo_ptr result = NULL;
 	addrinfo *result_ = NULL;
-	int err = getaddrinfo("0.0.0.0", std::to_string(port).c_str(), &hints, &result_);
+	int err =
+		getaddrinfo("0.0.0.0", std::to_string(port).c_str(), &hints, &result_);
 	if (err == -1)
 		return errno;
 	result.reset(result_);
 	result_ = nullptr;
 
-	socket sock{::socket(result->ai_family, result->ai_socktype, result->ai_protocol)};
+	socket sock{
+		::socket(result->ai_family, result->ai_socktype, result->ai_protocol)
+	};
 	if (sock.get() == -1)
 		return errno;
 
@@ -117,19 +117,20 @@ std::expected<socket, int> server::accept()
 {
 	struct sockaddr_storage remote_addr;
 	socklen_t addr_size = sizeof(remote_addr);
-	int sock = ::accept(socket_ipv4.get(), reinterpret_cast<sockaddr*>(&remote_addr), &addr_size);
+	int sock = ::accept(
+		socket_ipv4.get(), reinterpret_cast<sockaddr *>(&remote_addr),
+		&addr_size
+	);
 	if (sock == -1)
 		return std::unexpected(errno);
 
-	constexpr const timeval read_timeout = {
-		.tv_sec = 1,
-		.tv_usec = 0
-	};
+	constexpr const timeval read_timeout = {.tv_sec = 1, .tv_usec = 0};
 
-	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
+	setsockopt(
+		sock, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout)
+	);
 	return socket(sock);
 }
-
 
 void server::close()
 {
@@ -137,4 +138,4 @@ void server::close()
 	socket_ipv4.close();
 }
 
-}
+} // namespace pcrb
